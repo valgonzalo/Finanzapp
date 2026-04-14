@@ -1,0 +1,365 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
+import { formatCurrency, formatRelativeDate } from '@/lib/utils';
+import { Plus, Bell, Trash2, ArrowUpRight, ArrowDownRight, Calendar, Clock, RotateCw } from 'lucide-react';
+import BottomSheet from '@/components/BottomSheet';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
+import { CurrencyInput } from '@/components/CurrencyInput';
+
+import { Suspense } from 'react';
+
+export default function RemindersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-text-muted">Cargando...</div>}>
+      <RemindersScreen />
+    </Suspense>
+  );
+}
+
+const getRecurrenceLabel = (recurrence: string) => {
+  switch (recurrence) {
+    case 'weekly': return 'Semanal';
+    case 'monthly': return 'Mensual';
+    default: return 'Una vez';
+  }
+};
+
+function RemindersScreen() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Add Modal State
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState('09:00');
+  const [recurrence, setRecurrence] = useState<'once' | 'weekly' | 'monthly'>('once');
+  const [type, setType] = useState<'payment' | 'collection' | 'general'>('general');
+
+  useEffect(() => {
+    if (searchParams.get('add') === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsAddModalOpen(true);
+      router.replace('/reminders', { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const reminders = useLiveQuery(() => db.reminders.toArray()) || [];
+
+  const now = new Date();
+  
+  const activeReminders = reminders.filter(r => {
+    const reminderDate = new Date(`${r.date}T${r.time}`);
+    return r.is_active === 1 && (r.recurrence !== 'once' || reminderDate >= now);
+  }).sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+
+  const pastReminders = reminders.filter(r => {
+    const reminderDate = new Date(`${r.date}T${r.time}`);
+    return r.is_active === 0 || (r.recurrence === 'once' && reminderDate < now);
+  }).sort((a, b) => new Date(`${b.date}T${b.time}`).getTime() - new Date(`${a.date}T${a.time}`).getTime());
+
+  const displayedReminders = activeTab === 'active' ? activeReminders : pastReminders;
+
+  const handleSaveReminder = async () => {
+    if (!title || !date || !time) return;
+
+    // Request notification permission if available
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      await Notification.requestPermission();
+    }
+
+    await db.reminders.add({
+      title,
+      description,
+      amount: amount ? parseFloat(amount.replace(/\./g, '')) : undefined,
+      date,
+      time,
+      recurrence,
+      type,
+      is_active: 1,
+      created_at: new Date().toISOString()
+    });
+
+    setIsAddModalOpen(false);
+    setTitle('');
+    setDescription('');
+    setAmount('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setTime('09:00');
+    setRecurrence('once');
+    setType('general');
+  };
+
+  const handleToggleActive = async (id: number, currentStatus: number) => {
+    await db.reminders.update(id, { is_active: currentStatus === 1 ? 0 : 1 });
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm('¿Estás seguro de eliminar este recordatorio?')) {
+      await db.reminders.delete(id);
+    }
+  };
+
+  const getProximityColor = (dateStr: string, timeStr: string) => {
+    const reminderDate = new Date(`${dateStr}T${timeStr}`);
+    const diffDays = (reminderDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (diffDays < 0) return 'text-error bg-error/10 border border-error/20';
+    if (diffDays <= 1) return 'text-error bg-error/10 border border-error/20';
+    if (diffDays <= 3) return 'text-warning bg-warning/10 border border-warning/20';
+    return 'text-primary bg-primary/10 border border-primary/20';
+  };
+
+  const getIconForType = (t?: string) => {
+    switch (t) {
+      case 'payment': return <ArrowUpRight className="w-5 h-5" />;
+      case 'collection': return <ArrowDownRight className="w-5 h-5" />;
+      default: return <Bell className="w-5 h-5" />;
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 400, damping: 30 } }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6 pb-24">
+      <header className="pt-4 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-text-primary text-2xl font-display font-semibold tracking-tight">Recordatorios</h1>
+            <p className="text-text-secondary text-sm mt-1">Que no se te pase nada</p>
+          </div>
+        </div>
+
+        <div className="flex bg-surface-alt/80 backdrop-blur-md rounded-xl p-1 border border-border/50">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
+              activeTab === 'active' ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+            }`}
+          >
+            Activos
+          </button>
+          <button
+            onClick={() => setActiveTab('past')}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
+              activeTab === 'past' ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+            }`}
+          >
+            Pasados
+          </button>
+        </div>
+      </header>
+
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
+        <AnimatePresence>
+        {displayedReminders.length > 0 ? (
+          displayedReminders.map(reminder => (
+            <motion.div variants={itemVariants} layout key={reminder.id} className={`bg-surface/80 backdrop-blur-md rounded-2xl border p-5 shadow-sm transition-all ${
+              reminder.is_active ? 'border-border hover:border-primary/50' : 'border-border/50 opacity-60'
+            }`}>
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getProximityColor(reminder.date, reminder.time)}`}>
+                    {getIconForType(reminder.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-semibold text-lg truncate ${reminder.is_active ? 'text-text-primary' : 'text-text-muted line-through'}`}>{reminder.title}</h3>
+                    {reminder.description && (
+                      <p className="text-xs text-text-muted mt-0.5">{reminder.description}</p>
+                    )}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleToggleActive(reminder.id!, reminder.is_active)}
+                  className={`w-12 h-6 rounded-full transition-colors relative ${reminder.is_active === 1 ? 'bg-primary' : 'bg-surface-alt border border-border'}`}
+                >
+                  <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${reminder.is_active === 1 ? 'translate-x-7' : 'translate-x-1'}`} />
+                </button>
+              </div>
+              
+              <div className="flex flex-wrap gap-3 mt-4">
+                <div className="flex items-center gap-1.5 text-xs text-text-muted bg-surface-alt px-2.5 py-1 rounded-md border border-border/50">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{formatRelativeDate(reminder.date)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-text-muted bg-surface-alt px-2.5 py-1 rounded-md border border-border/50">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{reminder.time}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-text-muted bg-surface-alt px-2.5 py-1 rounded-md border border-border/50">
+                  <RotateCw className="w-3.5 h-3.5" />
+                  <span>{getRecurrenceLabel(reminder.recurrence)}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-end mt-4 pt-4 border-t border-border/50">
+                {reminder.amount ? (
+                  <p className={`font-display font-semibold text-xl ${reminder.type === 'payment' ? 'text-error' : reminder.type === 'collection' ? 'text-primary' : 'text-text-primary'}`}>
+                    {formatCurrency(reminder.amount)}
+                  </p>
+                ) : (
+                  <div />
+                )}
+                <button onClick={() => handleDelete(reminder.id!)} className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-full transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-16 flex flex-col items-center justify-center text-text-muted">
+            <div className="w-20 h-20 rounded-full bg-surface-alt flex items-center justify-center mb-4">
+              <Bell className="w-10 h-10 opacity-50" />
+            </div>
+            <p className="font-medium">No hay recordatorios {activeTab === 'active' ? 'activos' : 'pasados'}</p>
+          </motion.div>
+        )}
+        </AnimatePresence>
+      </motion.div>
+
+      <motion.button 
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsAddModalOpen(true)}
+        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 bg-primary rounded-full flex items-center justify-center text-text-inverse shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:bg-primary-dim transition-colors z-40"
+      >
+        <Plus className="w-6 h-6" />
+      </motion.button>
+
+      <BottomSheet isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Nuevo Recordatorio">
+        <div className="space-y-6 pb-8">
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-2">Tipo de recordatorio</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => setType('payment')}
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 ${
+                  type === 'payment' ? 'bg-error/10 border-error text-error shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'bg-surface-alt border-border text-text-muted hover:bg-surface-alt/80'
+                }`}
+              >
+                <ArrowUpRight className="w-6 h-6 mb-1" />
+                <span className="text-[10px] font-medium text-center leading-tight mt-1">Tengo que pagar</span>
+              </button>
+              <button
+                onClick={() => setType('collection')}
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 ${
+                  type === 'collection' ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_rgba(0,255,136,0.2)]' : 'bg-surface-alt border-border text-text-muted hover:bg-surface-alt/80'
+                }`}
+              >
+                <ArrowDownRight className="w-6 h-6 mb-1" />
+                <span className="text-[10px] font-medium text-center leading-tight mt-1">Me tienen que pagar</span>
+              </button>
+              <button
+                onClick={() => setType('general')}
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 ${
+                  type === 'general' ? 'bg-blue-500/10 border-blue-500 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]' : 'bg-surface-alt border-border text-text-muted hover:bg-surface-alt/80'
+                }`}
+              >
+                <Bell className="w-6 h-6 mb-1" />
+                <span className="text-[10px] font-medium text-center leading-tight mt-1">General / Tarea</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-2">Título</label>
+            <input 
+              type="text" 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+              placeholder={type === 'payment' ? 'Ej: Pagar el Gym' : type === 'collection' ? 'Ej: Cobrar a Cliente' : 'Ej: Mandar mensaje'}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-2">Descripción (Opcional)</label>
+            <input 
+              type="text" 
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+              placeholder="Ej: Visa terminada en 1234"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-2">Monto (Opcional)</label>
+            <CurrencyInput value={amount} onChange={setAmount} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-text-muted mb-2">Fecha</label>
+              <input 
+                suppressHydrationWarning
+                type="date" 
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-muted mb-2">Hora</label>
+              <input 
+                type="time" 
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-2">Repetición</label>
+            <div className="flex bg-surface-alt rounded-xl p-1 border border-border/50">
+              {[
+                { id: 'once', label: 'Una vez' },
+                { id: 'weekly', label: 'Semanal' },
+                { id: 'monthly', label: 'Mensual' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setRecurrence(opt.id as any)}
+                  className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
+                    recurrence === opt.id 
+                      ? 'bg-surface text-text-primary shadow-md scale-100' 
+                      : 'text-text-muted scale-95'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSaveReminder}
+            disabled={!title || !date || !time}
+            className="w-full bg-primary text-text-inverse font-display font-semibold py-4 rounded-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dim transition-colors"
+          >
+            Guardar Recordatorio
+          </motion.button>
+        </div>
+      </BottomSheet>
+    </motion.div>
+  );
+}
