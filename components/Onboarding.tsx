@@ -33,31 +33,31 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
 
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md md:max-w-xl lg:max-w-2xl space-y-10 md:space-y-16 text-center z-10"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-sm md:max-w-md lg:max-w-lg space-y-8 md:space-y-12 text-center z-10"
       >
         <div className="flex justify-center">
           <motion.div 
             whileHover={{ scale: 1.05 }}
-            className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 bg-primary/20 rounded-[2rem] md:rounded-[3rem] flex items-center justify-center border border-primary/30 shadow-[0_0_50px_rgba(0,255,136,0.3)]"
+            className="w-20 h-20 md:w-24 md:h-24 bg-primary/20 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center border border-primary/30 shadow-[0_0_40px_rgba(0,255,136,0.2)]"
           >
-            <Wallet className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-primary" />
+            <Wallet className="w-10 h-10 md:w-12 md:h-12 text-primary" />
           </motion.div>
         </div>
 
-        <div className="space-y-4 md:space-y-6">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-text-primary tracking-tight">
-            Bienvenido a <span className="text-primary italic">FinanzApp</span>
+        <div className="space-y-3 md:space-y-4">
+          <h1 className="text-3xl md:text-5xl font-display font-bold text-text-primary tracking-tight leading-tight">
+            Bienvenido a <br /><span className="text-primary italic">FinanzApp</span>
           </h1>
-          <p className="text-text-secondary text-lg md:text-2xl lg:text-3xl max-w-lg mx-auto leading-relaxed">
+          <p className="text-text-secondary text-base md:text-xl max-w-sm mx-auto leading-relaxed">
             Tu aliado para una gestión financiera <span className="text-text-primary font-semibold">local, simple y privada.</span>
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8 pt-4 max-w-md mx-auto w-full">
-          <div className="text-left space-y-3">
-            <label htmlFor="name" className="text-sm md:text-base font-semibold text-text-muted ml-2 uppercase tracking-widest">
+        <form onSubmit={handleSubmit} className="space-y-6 pt-2 max-w-sm mx-auto w-full">
+          <div className="text-left space-y-2.5">
+            <label htmlFor="name" className="text-xs font-semibold text-text-muted ml-2 uppercase tracking-widest">
               ¿Cómo te llamas?
             </label>
             <input
@@ -67,7 +67,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Escribe tu nombre..."
-              className="w-full bg-surface-alt/50 border border-border/50 rounded-3xl p-5 md:p-6 text-xl md:text-2xl text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all shadow-2xl backdrop-blur-sm"
+              className="w-full bg-surface-alt/50 border border-border/50 rounded-2xl p-4 md:p-5 text-lg md:text-xl text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all shadow-xl backdrop-blur-sm"
               required
             />
           </div>
@@ -76,10 +76,10 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             whileTap={{ scale: 0.98 }}
             whileHover={{ scale: 1.02 }}
             disabled={!name.trim() || isSubmitting}
-            className="w-full bg-primary text-text-inverse font-bold py-5 md:py-6 rounded-3xl flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,255,136,0.2)] disabled:opacity-50 disabled:shadow-none transition-all hover:bg-primary-dim text-xl md:text-2xl group"
+            className="w-full bg-primary text-text-inverse font-bold py-4 md:py-5 rounded-2xl flex items-center justify-center gap-2 shadow-[0_15px_30px_rgba(0,255,136,0.15)] disabled:opacity-50 disabled:shadow-none transition-all hover:bg-primary-dim text-lg md:text-xl group"
           >
             {isSubmitting ? 'Guardando...' : 'Comenzar mi viaje'}
-            {!isSubmitting && <ArrowRight className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 transition-transform" />}
+            {!isSubmitting && <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" />}
           </motion.button>
         </form>
 
