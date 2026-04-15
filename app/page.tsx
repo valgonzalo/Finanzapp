@@ -171,9 +171,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!onboardingCompleted) {
-    return <Onboarding onComplete={() => router.refresh()} />;
-  }
+
 
   return (
     <motion.div 
