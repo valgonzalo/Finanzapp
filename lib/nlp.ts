@@ -14,17 +14,35 @@ export function parseNaturalLanguage(input: string): ParsedTransaction | null {
   const text = input.toLowerCase()
     .replace(/(\d+)[.,](\d{3})(?!\d)/g, '$1$2')
     .replace(/(\d+)[.,](\d{3})[.,](\d{3})(?!\d)/g, '$1$2$3');
-  
   // 1. Detect Amount
   let amount = 0;
-  const priceMatch = text.match(/\$\s?(\d+([.,]\d+)?)/) || text.match(/(\d+([.,]\d+)?)\s?(?:pesos|eur|usd|dolares)/);
+  // Match currency patterns or standalone numbers
+  // Avoid matching dates like "15 de mayo" by being specific in the lookahead
+  const amountRegex = /(?<!a las |vence el |el |día )(\d+([.,]\d{3})*([.,]\d+)?)(?!\s?hs|am|pm|\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre))/i;
+  
+  const priceMatch = text.match(/\$\s?(\d+([.,]\d+)*([.,]\d+)?)/i) || 
+                     text.match(/(\d+([.,]\d+)*([.,]\d+)?)\s?(?:pesos|eur|usd|dolares)/i) ||
+                     text.match(amountRegex);
+
   if (priceMatch) {
-    amount = parseFloat(priceMatch[1].replace(',', '.'));
-  } else {
-    const genericMatch = text.match(/(?<!a las |vence el |el |día )(\d+([.,]\d+)?)(?!\s?hs|am|pm| de )/);
-    if (genericMatch) {
-       amount = parseFloat(genericMatch[1].replace(',', '.'));
+    let rawAmount = priceMatch[1];
+    // If it has multiple dots/commas, it's likely thousands
+    // Example: 240.000 -> 240000
+    // Example: 1.200,50 -> 1200.50
+    if ((rawAmount.match(/[.,]/g) || []).length > 1 || (rawAmount.includes('.') && rawAmount.includes(','))) {
+      // Ar format: 1.200,50 or 1.200.000
+      rawAmount = rawAmount.replace(/\./g, '').replace(',', '.');
+    } else if (rawAmount.includes('.') && rawAmount.split('.')[1].length === 3) {
+      // Single dot followed by 3 digits: likely thousands (240.000)
+      rawAmount = rawAmount.replace('.', '');
+    } else if (rawAmount.includes(',') && rawAmount.split(',')[1].length === 3) {
+      // Single comma followed by 3 digits: likely thousands (240,000)
+      rawAmount = rawAmount.replace(',', '');
+    } else {
+      // Likely decimal
+      rawAmount = rawAmount.replace(',', '.');
     }
+    amount = parseFloat(rawAmount);
   }
 
   // 2. Detect Type (with better synonyms)
