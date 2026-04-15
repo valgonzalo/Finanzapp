@@ -172,7 +172,7 @@ export default function Dashboard() {
   }
 
   if (!onboardingCompleted) {
-    return <Onboarding onComplete={() => {}} />;
+    return <Onboarding onComplete={() => router.refresh()} />;
   }
 
   return (
