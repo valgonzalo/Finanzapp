@@ -41,7 +41,7 @@ export interface Reminder {
   amount?: number;
   date: string;
   time: string;
-  recurrence: 'once' | 'weekly' | 'monthly';
+  recurrence: 'once' | 'daily' | 'weekly' | 'monthly';
   is_active: number;
   notification_id?: string;
   created_at?: string;

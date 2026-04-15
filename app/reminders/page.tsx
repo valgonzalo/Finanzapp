@@ -22,6 +22,7 @@ export default function RemindersPage() {
 
 const getRecurrenceLabel = (recurrence: string) => {
   switch (recurrence) {
+    case 'daily': return 'Diario';
     case 'weekly': return 'Semanal';
     case 'monthly': return 'Mensual';
     default: return 'Una vez';
@@ -42,7 +43,7 @@ function RemindersScreen() {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('09:00');
-  const [recurrence, setRecurrence] = useState<'once' | 'weekly' | 'monthly'>('once');
+  const [recurrence, setRecurrence] = useState<'once' | 'daily' | 'weekly' | 'monthly'>('once');
   const [type, setType] = useState<'payment' | 'collection' | 'general'>('general');
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -345,7 +346,7 @@ function RemindersScreen() {
             <CurrencyInput value={amount} onChange={setAmount} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid grid-cols-2 gap-4 ${recurrence === 'daily' ? 'hidden' : ''}`}>
             <div>
               <label className="block text-xs font-medium text-text-muted mb-2">Fecha</label>
               <input 
@@ -367,14 +368,27 @@ function RemindersScreen() {
             </div>
           </div>
 
+          {recurrence === 'daily' && (
+            <div>
+              <label className="block text-xs font-medium text-text-muted mb-2">Hora</label>
+              <input 
+                type="time" 
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-text-muted mb-2">Repetición</label>
             <div className="flex bg-surface-alt rounded-xl p-1 border border-border/50">
               {[
                 { id: 'once', label: 'Una vez' },
+                { id: 'daily', label: 'Diario' },
                 { id: 'weekly', label: 'Semanal' },
                 { id: 'monthly', label: 'Mensual' }
-              ].map(opt => (
+              ] .map(opt => (
                 <button
                   key={opt.id}
                   onClick={() => setRecurrence(opt.id as any)}
