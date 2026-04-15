@@ -322,7 +322,14 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <p className="text-text-primary font-semibold md:text-lg">{debt.person_name}</p>
-                      <p className="text-xs md:text-sm text-warning font-medium mt-0.5">Pendiente</p>
+                      <div className="flex flex-col gap-1 mt-0.5">
+                        <p className="text-xs md:text-sm text-warning font-medium">Pendiente</p>
+                        {debt.due_date && new Date(debt.due_date) < new Date(new Date().setHours(0,0,0,0)) && (
+                          <p className="text-[10px] md:text-xs text-error font-bold uppercase tracking-wider bg-error/10 px-2 py-0.5 rounded-md w-fit">
+                            Venció: {formatRelativeDate(debt.due_date)}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
