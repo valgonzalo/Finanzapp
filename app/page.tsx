@@ -72,7 +72,7 @@ export default function Dashboard() {
       .sort((a, b) => (b.value as number) - (a.value as number));
   }, [currentMonthTransactions]);
 
-  const COLORS = ['#00FF88', '#00CC6A', '#6EE7B7', '#D1FAE5', '#047857', '#FBBF24', '#60A5FA'];
+  const COLORS = ['#00FF88', '#3B82F6', '#A855F7', '#F59E0B', '#EC4899', '#06B6D4', '#EF4444', '#10B981', '#6366F1'];
 
   const chartComponent = useMemo(() => {
     if (chartData.length === 0) {
@@ -187,13 +187,6 @@ export default function Dashboard() {
           <h1 suppressHydrationWarning className="text-text-primary text-2xl md:text-4xl font-display font-semibold tracking-tight">{greeting}</h1>
           <p suppressHydrationWarning className="text-text-secondary text-sm md:text-base mt-1">Acá está tu resumen de {monthName}</p>
         </div>
-        <motion.button 
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsAddModalOpen(true)}
-          className="w-12 h-12 md:w-16 md:h-16 bg-primary rounded-full flex items-center justify-center text-text-inverse shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:bg-primary-dim transition-colors"
-        >
-          <Plus className="w-7 h-7 md:w-9 md:h-9" />
-        </motion.button>
       </motion.header>
 
       {/* Urgent Notices Banner */}

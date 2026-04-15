@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Urbanist } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import FloatingActions from '@/components/FloatingActions';
 
 const urbanist = Urbanist({ 
   subsets: ['latin'], 
@@ -13,6 +14,10 @@ export const metadata: Metadata = {
   title: 'FinanzApp',
   description: 'App de Finanzas Personales',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -45,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </main>
         <Navigation />
+        <FloatingActions />
       </body>
     </html>
   );

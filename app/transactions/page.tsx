@@ -72,7 +72,12 @@ function TransactionsScreen() {
       const isSameMonth = d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
       const isSameType = activeTab === 'all' || t.type === activeTab;
       return isSameMonth && isSameType;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).sort((a, b) => {
+      const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      // If same day, use ID/Created_at (recents first)
+      return (b.id || 0) - (a.id || 0);
+    });
   }, [transactions, currentDate, activeTab]);
 
   const income = useMemo(() => filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0), [filteredTransactions]);
@@ -265,13 +270,7 @@ function TransactionsScreen() {
         </AnimatePresence>
       </motion.div>
 
-      <motion.button 
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsAddModalOpen(true)}
-        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 bg-primary rounded-full flex items-center justify-center text-text-inverse shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:bg-primary-dim transition-colors z-40"
-      >
-        <Plus className="w-6 h-6" />
-      </motion.button>
+
 
       <BottomSheet isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(false); setEditingId(null); }} title={editingId ? 'Editar Transacción' : 'Nueva Transacción'}>
         <div className="space-y-6 pb-8">

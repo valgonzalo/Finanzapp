@@ -1,6 +1,6 @@
 {
-  "name": "FinanzasVal",
-  "short_name": "FinanzasVal",
+  "name": "FinanzAPP",
+  "short_name": "FinanzAPP",
   "description": "App de Finanzas Personales",
   "start_url": "/",
   "display": "standalone",
@@ -8,9 +8,9 @@
   "theme_color": "#0A0A0A",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

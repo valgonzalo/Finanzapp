@@ -222,13 +222,7 @@ function DebtsScreen() {
         </AnimatePresence>
       </motion.div>
 
-      <motion.button 
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsAddModalOpen(true)}
-        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 bg-primary rounded-full flex items-center justify-center text-text-inverse shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:bg-primary-dim transition-colors z-40"
-      >
-        <Plus className="w-6 h-6" />
-      </motion.button>
+
 
       <BottomSheet isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Nueva Deuda">
         <div className="space-y-4 pb-8">
