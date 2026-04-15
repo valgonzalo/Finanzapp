@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { formatCurrency } from '@/lib/utils';
@@ -21,6 +21,8 @@ export default function DebtsPage() {
     </Suspense>
   );
 }
+
+const EMPTY_ARRAY: any[] = [];
 
 function DebtsScreen() {
   const router = useRouter();
@@ -45,12 +47,12 @@ function DebtsScreen() {
     }
   }, [searchParams, router]);
 
-  const debts = useLiveQuery(() => db.debts.toArray()) || [];
+  const debts = useLiveQuery(() => db.debts.toArray()) || EMPTY_ARRAY;
 
-  const pendingDebts = debts.filter(d => d.status !== 'paid');
-  const paidDebts = debts.filter(d => d.status === 'paid');
+  const pendingDebts = useMemo(() => debts.filter(d => d.status !== 'paid'), [debts]);
+  const paidDebts = useMemo(() => debts.filter(d => d.status === 'paid'), [debts]);
 
-  const totalPending = pendingDebts.reduce((acc, d) => acc + (d.total_amount - d.paid_amount), 0);
+  const totalPending = useMemo(() => pendingDebts.reduce((acc, d) => acc + (d.total_amount - d.paid_amount), 0), [pendingDebts]);
 
   const displayedDebts = activeTab === 'pending' ? pendingDebts : paidDebts;
 
@@ -118,7 +120,7 @@ function DebtsScreen() {
           <p className="text-text-secondary text-sm mt-1">Gestioná la plata que te deben</p>
         </div>
 
-        <div className="bg-gradient-to-br from-surface to-warning/10 rounded-3xl border border-warning/20 p-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] relative overflow-hidden backdrop-blur-sm">
+        <div className="bg-gradient-to-br from-surface to-warning/10 rounded-3xl border border-warning/20 p-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-warning/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
           <p className="text-text-secondary text-sm mb-2 font-medium">Total pendiente a cobrar</p>
           <h2 className="text-5xl font-display font-bold text-warning tracking-tight">
@@ -126,7 +128,7 @@ function DebtsScreen() {
           </h2>
         </div>
 
-        <div className="flex bg-surface-alt/80 backdrop-blur-md rounded-xl p-1 border border-border/50">
+        <div className="flex bg-surface-alt/90 rounded-xl p-1 border border-border/50">
           <button
             onClick={() => setActiveTab('pending')}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
@@ -152,7 +154,7 @@ function DebtsScreen() {
           displayedDebts.map(debt => (
             <motion.div variants={itemVariants} layout key={debt.id}>
               <Link href={`/debts/${debt.id}`} className="block">
-                <div className="bg-surface/80 backdrop-blur-md rounded-2xl border border-border p-5 hover:border-primary/50 transition-colors shadow-sm">
+                <div className="bg-surface/90 rounded-2xl border border-border p-5 hover:border-primary/50 transition-colors shadow-sm">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-lg border ${

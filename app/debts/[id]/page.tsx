@@ -104,7 +104,7 @@ export default function DebtDetailScreen({ params }: { params: Promise<{ id: str
           <div className={`text-5xl font-display font-bold mb-6 tracking-tight ${debt.status === 'paid' ? 'text-primary' : 'text-text-primary'}`}>
             {formatCurrency(debt.total_amount)}
           </div>
-          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-alt/80 backdrop-blur-md border border-border/50 shadow-sm">
+          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-alt/90 border border-border/50 shadow-sm">
             <span className={`w-2 h-2 rounded-full mr-2 ${
               debt.status === 'paid' ? 'bg-primary shadow-[0_0_8px_rgba(0,255,136,0.5)]' :
               debt.status === 'partial' ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]' :
@@ -115,7 +115,7 @@ export default function DebtDetailScreen({ params }: { params: Promise<{ id: str
         </motion.div>
 
         {debt.due_date && (
-          <motion.div variants={itemVariants} className="flex items-center gap-4 p-5 bg-surface-alt/80 backdrop-blur-md rounded-2xl border border-border/50">
+          <motion.div variants={itemVariants} className="flex items-center gap-4 p-5 bg-surface-alt/90 rounded-2xl border border-border/50">
             <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center border border-border">
               <Calendar className="w-5 h-5 text-text-muted" />
             </div>
@@ -129,7 +129,7 @@ export default function DebtDetailScreen({ params }: { params: Promise<{ id: str
         )}
 
         {debt.notes && (
-          <motion.div variants={itemVariants} className="p-5 bg-surface-alt/80 backdrop-blur-md rounded-2xl border border-border/50">
+          <motion.div variants={itemVariants} className="p-5 bg-surface-alt/90 rounded-2xl border border-border/50">
             <p className="text-xs text-text-muted font-medium mb-2">Notas</p>
             <p className="text-sm text-text-primary leading-relaxed">{debt.notes}</p>
           </motion.div>
@@ -185,7 +185,7 @@ export default function DebtDetailScreen({ params }: { params: Promise<{ id: str
                   className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
                     inst.paid === 1 
                       ? 'bg-primary/10 border-primary/30 shadow-[0_0_10px_rgba(0,255,136,0.1)]' 
-                      : 'bg-surface-alt/80 backdrop-blur-md border-border/50 hover:border-primary/50'
+                      : 'bg-surface-alt/90 border-border/50 hover:border-primary/50'
                   }`}
                 >
                   <div className="flex items-center gap-4">

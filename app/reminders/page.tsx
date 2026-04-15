@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
@@ -28,6 +28,8 @@ const getRecurrenceLabel = (recurrence: string) => {
   }
 };
 
+const EMPTY_ARRAY: any[] = [];
+
 function RemindersScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,19 +53,23 @@ function RemindersScreen() {
     }
   }, [searchParams, router]);
 
-  const reminders = useLiveQuery(() => db.reminders.toArray()) || [];
+  const reminders = useLiveQuery(() => db.reminders.toArray()) || EMPTY_ARRAY;
 
-  const now = new Date();
-  
-  const activeReminders = reminders.filter(r => {
-    const reminderDate = new Date(`${r.date}T${r.time}`);
-    return r.is_active === 1 && (r.recurrence !== 'once' || reminderDate >= now);
-  }).sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+  const activeReminders = useMemo(() => {
+    const now = new Date();
+    return reminders.filter(r => {
+      const reminderDate = new Date(`${r.date}T${r.time}`);
+      return r.is_active === 1 && (r.recurrence !== 'once' || reminderDate >= now);
+    }).sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+  }, [reminders]);
 
-  const pastReminders = reminders.filter(r => {
-    const reminderDate = new Date(`${r.date}T${r.time}`);
-    return r.is_active === 0 || (r.recurrence === 'once' && reminderDate < now);
-  }).sort((a, b) => new Date(`${b.date}T${b.time}`).getTime() - new Date(`${a.date}T${a.time}`).getTime());
+  const pastReminders = useMemo(() => {
+    const now = new Date();
+    return reminders.filter(r => {
+      const reminderDate = new Date(`${r.date}T${r.time}`);
+      return r.is_active === 0 || (r.recurrence === 'once' && reminderDate < now);
+    }).sort((a, b) => new Date(`${b.date}T${b.time}`).getTime() - new Date(`${a.date}T${a.time}`).getTime());
+  }, [reminders]);
 
   const displayedReminders = activeTab === 'active' ? activeReminders : pastReminders;
 
@@ -108,6 +114,7 @@ function RemindersScreen() {
   };
 
   const getProximityColor = (dateStr: string, timeStr: string) => {
+    const now = new Date();
     const reminderDate = new Date(`${dateStr}T${timeStr}`);
     const diffDays = (reminderDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     
@@ -148,7 +155,7 @@ function RemindersScreen() {
           </div>
         </div>
 
-        <div className="flex bg-surface-alt/80 backdrop-blur-md rounded-xl p-1 border border-border/50">
+        <div className="flex bg-surface-alt/90 rounded-xl p-1 border border-border/50">
           <button
             onClick={() => setActiveTab('active')}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
@@ -172,7 +179,7 @@ function RemindersScreen() {
         <AnimatePresence>
         {displayedReminders.length > 0 ? (
           displayedReminders.map(reminder => (
-            <motion.div variants={itemVariants} layout key={reminder.id} className={`bg-surface/80 backdrop-blur-md rounded-2xl border p-5 shadow-sm transition-all ${
+            <motion.div variants={itemVariants} layout key={reminder.id} className={`bg-surface/90 rounded-2xl border p-5 shadow-sm transition-all ${
               reminder.is_active ? 'border-border hover:border-primary/50' : 'border-border/50 opacity-60'
             }`}>
               <div className="flex justify-between items-start mb-3">

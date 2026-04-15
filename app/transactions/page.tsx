@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
@@ -20,6 +20,8 @@ export default function TransactionsPage() {
     </Suspense>
   );
 }
+
+const EMPTY_ARRAY: any[] = [];
 
 function TransactionsScreen() {
   const router = useRouter();
@@ -48,24 +50,28 @@ function TransactionsScreen() {
 
   const transactions = useLiveQuery(() => 
     db.transactions.toArray()
-  ) || [];
+  ) || EMPTY_ARRAY;
 
-  const filteredTransactions = transactions.filter(t => {
-    const d = new Date(t.date);
-    const isSameMonth = d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-    const isSameType = activeTab === 'all' || t.type === activeTab;
-    return isSameMonth && isSameType;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const d = new Date(t.date);
+      const isSameMonth = d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+      const isSameType = activeTab === 'all' || t.type === activeTab;
+      return isSameMonth && isSameType;
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions, currentDate, activeTab]);
 
-  const income = filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  const income = useMemo(() => filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0), [filteredTransactions]);
+  const expense = useMemo(() => filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0), [filteredTransactions]);
   const balance = income - expense;
 
-  const groupedTransactions = filteredTransactions.reduce((acc, t) => {
-    if (!acc[t.date]) acc[t.date] = [];
-    acc[t.date].push(t);
-    return acc;
-  }, {} as Record<string, typeof transactions>);
+  const groupedTransactions = useMemo(() => {
+    return filteredTransactions.reduce((acc, t) => {
+      if (!acc[t.date]) acc[t.date] = [];
+      acc[t.date].push(t);
+      return acc;
+    }, {} as Record<string, typeof transactions>);
+  }, [filteredTransactions]);
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -120,7 +126,7 @@ function TransactionsScreen() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6 pb-24">
       <header className="pt-4 space-y-4">
-        <div className="flex justify-between items-center bg-surface-alt/80 backdrop-blur-md rounded-full p-1 border border-border/50">
+        <div className="flex justify-between items-center bg-surface-alt/90 rounded-full p-1 border border-border/50">
           <button onClick={handlePrevMonth} className="p-2 text-text-muted hover:text-text-primary transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -130,7 +136,7 @@ function TransactionsScreen() {
           </button>
         </div>
 
-        <div className="flex bg-surface-alt/80 backdrop-blur-md rounded-xl p-1 border border-border/50">
+        <div className="flex bg-surface-alt/90 rounded-xl p-1 border border-border/50">
           {['all', 'income', 'expense'].map((tab) => (
             <button
               key={tab}
@@ -144,7 +150,7 @@ function TransactionsScreen() {
           ))}
         </div>
 
-        <div className="flex justify-between items-center bg-surface/80 backdrop-blur-md p-5 rounded-2xl border border-border shadow-lg">
+        <div className="flex justify-between items-center bg-surface/90 p-5 rounded-2xl border border-border shadow-lg">
           <div>
             <p className="text-xs text-text-muted font-medium">Ingresos</p>
             <p className="text-primary font-semibold text-lg">{formatCurrency(income)}</p>
@@ -172,7 +178,7 @@ function TransactionsScreen() {
                 <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider pl-2">
                   {formatRelativeDate(date)}
                 </h4>
-                <div className="bg-surface/80 backdrop-blur-md rounded-2xl border border-border overflow-hidden shadow-sm">
+                <div className="bg-surface/90 rounded-2xl border border-border overflow-hidden shadow-sm">
                   {trans.map((t, i) => {
                     const cat = (t.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).find(c => c.id === t.category);
                     const Icon = cat?.icon || Wallet;

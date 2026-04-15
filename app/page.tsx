@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
@@ -10,6 +10,8 @@ import Link from 'next/link';
 import BottomSheet from '@/components/BottomSheet';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
+
+const EMPTY_ARRAY: any[] = [];
 
 export default function Dashboard() {
   const router = useRouter();
@@ -36,29 +38,73 @@ export default function Dashboard() {
 
   const transactions = useLiveQuery(() => 
     db.transactions.toArray()
-  ) || [];
+  ) || EMPTY_ARRAY;
 
   const currentMonthTransactions = transactions.filter(t => {
     const d = new Date(t.date);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });
 
-  const income = currentMonthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const expense = currentMonthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  const income = useMemo(() => currentMonthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0), [currentMonthTransactions]);
+  const expense = useMemo(() => currentMonthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0), [currentMonthTransactions]);
   const balance = income - expense;
 
-  const expensesByCategory = currentMonthTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
-      return acc;
-    }, {} as Record<string, number>);
+  const chartData = useMemo(() => {
+    const expensesByCategory = currentMonthTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((acc, t) => {
+        acc[t.category] = (acc[t.category] || 0) + t.amount;
+        return acc;
+      }, {} as Record<string, number>);
 
-  const chartData = Object.entries(expensesByCategory)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+    return Object.entries(expensesByCategory)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [currentMonthTransactions]);
 
   const COLORS = ['#00FF88', '#00CC6A', '#6EE7B7', '#D1FAE5', '#047857', '#FBBF24', '#60A5FA'];
+
+  const chartComponent = useMemo(() => {
+    if (chartData.length === 0) {
+      return (
+        <div className="h-40 flex flex-col items-center justify-center text-text-muted">
+          <div className="w-16 h-16 rounded-full bg-surface-alt flex items-center justify-center mb-3">
+            <Wallet className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">Sin gastos este mes</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="h-52">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={65}
+              outerRadius={85}
+              paddingAngle={6}
+              dataKey="value"
+              stroke="none"
+              cornerRadius={4}
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip 
+              formatter={(value: any) => formatCurrency(Number(value))}
+              contentStyle={{ backgroundColor: 'rgba(26, 26, 26, 0.9)', backdropFilter: 'blur(8px)', borderColor: '#222222', borderRadius: '12px', padding: '12px' }}
+              itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }, [chartData]);
 
   const pendingDebts = useLiveQuery(() => 
     db.debts.where('status').notEqual('paid').limit(3).toArray()
@@ -105,7 +151,7 @@ export default function Dashboard() {
       </motion.header>
 
       {/* Balance Card */}
-      <motion.div variants={itemVariants} className="bg-gradient-to-br from-surface to-primary/10 rounded-3xl border border-primary/20 p-6 shadow-[0_0_30px_rgba(0,255,136,0.1)] relative overflow-hidden backdrop-blur-sm">
+      <motion.div variants={itemVariants} className="bg-gradient-to-br from-surface to-primary/10 rounded-3xl border border-primary/20 p-6 shadow-[0_0_30px_rgba(0,255,136,0.1)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
         <p className="text-text-secondary text-sm mb-2 font-medium">Balance neto</p>
         <h2 className={`text-5xl font-display font-bold mb-6 tracking-tight ${balance >= 0 ? 'text-primary' : 'text-error'}`}>
@@ -134,47 +180,13 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Chart Card */}
-      <motion.div variants={itemVariants} className="bg-surface/80 backdrop-blur-md rounded-3xl border border-border p-6 shadow-lg">
+      <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 shadow-lg">
         <h3 className="text-text-primary font-display font-semibold mb-4 text-lg">Gastos por categoría</h3>
-        {chartData.length > 0 ? (
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={65}
-                  outerRadius={85}
-                  paddingAngle={6}
-                  dataKey="value"
-                  stroke="none"
-                  cornerRadius={4}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: any) => formatCurrency(Number(value))}
-                  contentStyle={{ backgroundColor: 'rgba(26, 26, 26, 0.9)', backdropFilter: 'blur(8px)', borderColor: '#222222', borderRadius: '12px', padding: '12px' }}
-                  itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="h-40 flex flex-col items-center justify-center text-text-muted">
-            <div className="w-16 h-16 rounded-full bg-surface-alt flex items-center justify-center mb-3">
-              <Wallet className="w-8 h-8 opacity-50" />
-            </div>
-            <p className="text-sm font-medium">Sin gastos este mes</p>
-          </div>
-        )}
+        {chartComponent}
       </motion.div>
 
       {/* Debts Card */}
-      <motion.div variants={itemVariants} className="bg-surface/80 backdrop-blur-md rounded-3xl border border-border p-6 shadow-lg">
+      <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 shadow-lg">
         <div className="flex justify-between items-center mb-5">
           <div>
             <h3 className="text-text-primary font-display font-semibold text-lg">Me deben</h3>
@@ -211,7 +223,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Reminders Card */}
-      <motion.div variants={itemVariants} className="bg-surface/80 backdrop-blur-md rounded-3xl border border-border p-6 shadow-lg">
+      <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 shadow-lg">
         <div className="flex justify-between items-center mb-5">
           <h3 className="text-text-primary font-display font-semibold text-lg">Esta semana</h3>
           <Link href="/reminders" className="text-primary text-sm font-medium flex items-center bg-primary/10 px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors">
