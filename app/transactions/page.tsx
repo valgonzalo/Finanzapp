@@ -241,7 +241,7 @@ function TransactionsScreen() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 md:gap-4">
-                          <p className={`font-display font-semibold text-lg md:text-2xl ${t.type === 'income' ? 'text-primary' : 'text-text-primary'}`}>
+                          <p className={`font-display font-semibold text-lg md:text-2xl ${t.type === 'income' ? 'text-primary' : 'text-error'}`}>
                             {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                           </p>
                           <div className="flex items-center gap-1 md:gap-2">

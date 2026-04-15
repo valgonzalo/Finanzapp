@@ -265,7 +265,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xs md:text-sm text-text-muted font-medium group-hover/item:text-primary transition-colors">Ingresos</p>
-                <p className="text-lg md:text-2xl font-semibold text-text-primary">{formatCurrency(income)}</p>
+                <p className="text-lg md:text-2xl font-semibold text-primary">{formatCurrency(income)}</p>
               </div>
             </div>
             <div 
@@ -277,7 +277,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xs md:text-sm text-text-muted font-medium group-hover/item:text-error transition-colors">Gastos</p>
-                <p className="text-lg md:text-2xl font-semibold text-text-primary">{formatCurrency(expense)}</p>
+                <p className="text-lg md:text-2xl font-semibold text-error">{formatCurrency(expense)}</p>
               </div>
             </div>
           </div>
@@ -394,46 +394,7 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      <BottomSheet isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="¿Qué querés agregar?">
-        <div className="space-y-3">
-          <button 
-            onClick={() => { setIsAddModalOpen(false); router.push('/transactions?add=true'); }}
-            className="w-full flex items-center gap-4 p-5 bg-surface-alt rounded-2xl hover:bg-surface-alt/80 transition-colors border border-border/50"
-          >
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-              <ArrowLeftRight className="w-6 h-6 text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="text-text-primary font-semibold text-lg">Transacción</p>
-              <p className="text-text-muted text-sm mt-0.5">Ingreso o gasto</p>
-            </div>
-          </button>
-          <button 
-            onClick={() => { setIsAddModalOpen(false); router.push('/debts?add=true'); }}
-            className="w-full flex items-center gap-4 p-5 bg-surface-alt rounded-2xl hover:bg-surface-alt/80 transition-colors border border-border/50"
-          >
-            <div className="w-14 h-14 rounded-full bg-warning/10 flex items-center justify-center border border-warning/20">
-              <Users className="w-6 h-6 text-warning" />
-            </div>
-            <div className="text-left">
-              <p className="text-text-primary font-semibold text-lg">Deuda</p>
-              <p className="text-text-muted text-sm mt-0.5">Alguien me debe plata</p>
-            </div>
-          </button>
-          <button 
-            onClick={() => { setIsAddModalOpen(false); router.push('/reminders?add=true'); }}
-            className="w-full flex items-center gap-4 p-5 bg-surface-alt rounded-2xl hover:bg-surface-alt/80 transition-colors border border-border/50"
-          >
-            <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-              <Bell className="w-6 h-6 text-blue-400" />
-            </div>
-            <div className="text-left">
-              <p className="text-text-primary font-semibold text-lg">Recordatorio</p>
-              <p className="text-text-muted text-sm mt-0.5">Aviso de pago o cobro</p>
-            </div>
-          </button>
-        </div>
-      </BottomSheet>
+
     </motion.div>
   );
 }
