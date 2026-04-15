@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
-import { Plus, Bell, Trash2, ArrowUpRight, ArrowDownRight, Calendar, Clock, RotateCw } from 'lucide-react';
+import { Plus, Bell, Trash2, ArrowUpRight, ArrowDownRight, Calendar, Clock, RotateCw, Pencil } from 'lucide-react';
 import BottomSheet from '@/components/BottomSheet';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
@@ -44,16 +44,35 @@ function RemindersScreen() {
   const [time, setTime] = useState('09:00');
   const [recurrence, setRecurrence] = useState<'once' | 'weekly' | 'monthly'>('once');
   const [type, setType] = useState<'payment' | 'collection' | 'general'>('general');
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleEdit = (r: any) => {
+    setEditingId(r.id);
+    setTitle(r.title);
+    setDescription(r.description || '');
+    setAmount(r.amount ? new Intl.NumberFormat('es-AR').format(r.amount) : '');
+    setDate(r.date);
+    setTime(r.time);
+    setRecurrence(r.recurrence);
+    setType(r.type);
+    setIsAddModalOpen(true);
+  };
+
+  const reminders = useLiveQuery(() => db.reminders.toArray()) || EMPTY_ARRAY;
 
   useEffect(() => {
-    if (searchParams.get('add') === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    const editId = searchParams.get('edit');
+    if (editId && reminders.length > 0) {
+      const reminderToEdit = reminders.find(r => r.id === parseInt(editId));
+      if (reminderToEdit) {
+        handleEdit(reminderToEdit);
+        router.replace('/reminders', { scroll: false });
+      }
+    } else if (searchParams.get('add') === 'true') {
       setIsAddModalOpen(true);
       router.replace('/reminders', { scroll: false });
     }
-  }, [searchParams, router]);
-
-  const reminders = useLiveQuery(() => db.reminders.toArray()) || EMPTY_ARRAY;
+  }, [searchParams, router, reminders]);
 
   const activeReminders = useMemo(() => {
     const now = new Date();
@@ -81,19 +100,34 @@ function RemindersScreen() {
       await Notification.requestPermission();
     }
 
-    await db.reminders.add({
-      title,
-      description,
-      amount: amount ? parseFloat(amount.replace(/\./g, '')) : undefined,
-      date,
-      time,
-      recurrence,
-      type,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    });
+    const parsedAmount = amount ? parseFloat(amount.replace(/\./g, '')) : undefined;
+
+    if (editingId) {
+      await db.reminders.update(editingId, {
+        title,
+        description,
+        amount: parsedAmount,
+        date,
+        time,
+        recurrence,
+        type
+      });
+    } else {
+      await db.reminders.add({
+        title,
+        description,
+        amount: parsedAmount,
+        date,
+        time,
+        recurrence,
+        type,
+        is_active: 1,
+        created_at: new Date().toISOString()
+      });
+    }
 
     setIsAddModalOpen(false);
+    setEditingId(null);
     setTitle('');
     setDescription('');
     setAmount('');
@@ -146,28 +180,28 @@ function RemindersScreen() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6 pb-24">
-      <header className="pt-4 space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 lg:p-12 space-y-8 pb-32">
+      <header className="pt-4 space-y-8 max-w-4xl mx-auto">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-text-primary text-2xl font-display font-semibold tracking-tight">Recordatorios</h1>
-            <p className="text-text-secondary text-sm mt-1">Que no se te pase nada</p>
+            <h1 className="text-text-primary text-2xl md:text-5xl font-display font-bold tracking-tight">Recordatorios</h1>
+            <p className="text-text-secondary text-sm md:text-lg mt-1 md:mt-2">Que no se te pase nada</p>
           </div>
         </div>
 
-        <div className="flex bg-surface-alt/90 rounded-xl p-1 border border-border/50">
+        <div className="flex bg-surface-alt rounded-2xl p-1.5 border border-border/50">
           <button
             onClick={() => setActiveTab('active')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
-              activeTab === 'active' ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+            className={`flex-1 py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 ${
+              activeTab === 'active' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
             Activos
           </button>
           <button
             onClick={() => setActiveTab('past')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
-              activeTab === 'past' ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+            className={`flex-1 py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 ${
+              activeTab === 'past' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
             Pasados
@@ -175,59 +209,64 @@ function RemindersScreen() {
         </div>
       </header>
 
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4 max-w-4xl mx-auto">
         <AnimatePresence>
         {displayedReminders.length > 0 ? (
-          displayedReminders.map(reminder => (
-            <motion.div variants={itemVariants} layout key={reminder.id} className={`bg-surface/90 rounded-2xl border p-5 shadow-sm transition-all ${
+          displayedReminders.map((reminder: any) => (
+            <motion.div variants={itemVariants} layout key={reminder.id} className={`bg-surface/90 rounded-3xl border p-6 md:p-8 shadow-sm transition-all ${
               reminder.is_active ? 'border-border hover:border-primary/50' : 'border-border/50 opacity-60'
             }`}>
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getProximityColor(reminder.date, reminder.time)}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-5">
+                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 border ${getProximityColor(reminder.date, reminder.time)}`}>
                     {getIconForType(reminder.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`font-semibold text-lg truncate ${reminder.is_active ? 'text-text-primary' : 'text-text-muted line-through'}`}>{reminder.title}</h3>
+                    <h3 className={`font-bold text-lg md:text-2xl truncate ${reminder.is_active ? 'text-text-primary' : 'text-text-muted line-through'}`}>{reminder.title}</h3>
                     {reminder.description && (
-                      <p className="text-xs text-text-muted mt-0.5">{reminder.description}</p>
+                      <p className="text-xs md:text-base text-text-muted mt-1">{reminder.description}</p>
                     )}
                   </div>
                 </div>
                 <button 
                   onClick={() => handleToggleActive(reminder.id!, reminder.is_active)}
-                  className={`w-12 h-6 rounded-full transition-colors relative ${reminder.is_active === 1 ? 'bg-primary' : 'bg-surface-alt border border-border'}`}
+                  className={`w-12 h-6 md:w-14 md:h-7 rounded-full transition-colors relative shrink-0 ${reminder.is_active === 1 ? 'bg-primary' : 'bg-surface-alt border border-border'}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${reminder.is_active === 1 ? 'translate-x-7' : 'translate-x-1'}`} />
+                  <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full bg-white absolute top-1 md:top-1 transition-transform ${reminder.is_active === 1 ? 'translate-x-7 md:translate-x-8' : 'translate-x-1'}`} />
                 </button>
               </div>
               
-              <div className="flex flex-wrap gap-3 mt-4">
-                <div className="flex items-center gap-1.5 text-xs text-text-muted bg-surface-alt px-2.5 py-1 rounded-md border border-border/50">
-                  <Calendar className="w-3.5 h-3.5" />
+              <div className="flex flex-wrap gap-3 mt-6">
+                <div className="flex items-center gap-1.5 text-xs md:text-sm text-text-muted bg-surface-alt px-3 py-1.5 rounded-lg border border-border/50">
+                  <Calendar className="w-4 h-4" />
                   <span>{formatRelativeDate(reminder.date)}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-text-muted bg-surface-alt px-2.5 py-1 rounded-md border border-border/50">
-                  <Clock className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5 text-xs md:text-sm text-text-muted bg-surface-alt px-3 py-1.5 rounded-lg border border-border/50">
+                  <Clock className="w-4 h-4" />
                   <span>{reminder.time}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-text-muted bg-surface-alt px-2.5 py-1 rounded-md border border-border/50">
-                  <RotateCw className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5 text-xs md:text-sm text-text-muted bg-surface-alt px-3 py-1.5 rounded-lg border border-border/50">
+                  <RotateCw className="w-4 h-4" />
                   <span>{getRecurrenceLabel(reminder.recurrence)}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-end mt-4 pt-4 border-t border-border/50">
+              <div className="flex justify-between items-end mt-6 pt-6 border-t border-border/50">
                 {reminder.amount ? (
-                  <p className={`font-display font-semibold text-xl ${reminder.type === 'payment' ? 'text-error' : reminder.type === 'collection' ? 'text-primary' : 'text-text-primary'}`}>
+                  <p className={`font-display font-bold text-xl md:text-3xl ${reminder.type === 'payment' ? 'text-error' : reminder.type === 'collection' ? 'text-primary' : 'text-text-primary'}`}>
                     {formatCurrency(reminder.amount)}
                   </p>
                 ) : (
                   <div />
                 )}
-                <button onClick={() => handleDelete(reminder.id!)} className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-full transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 md:gap-2">
+                  <button onClick={() => handleEdit(reminder)} className="p-2 text-text-muted hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+                    <Pencil className="w-5 h-5 md:w-6 md:h-6" />
+                  </button>
+                  <button onClick={() => handleDelete(reminder.id!)} className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-full transition-colors">
+                    <Trash2 className="w-5 h-5 md:w-6 md:h-6" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))
@@ -250,7 +289,7 @@ function RemindersScreen() {
         <Plus className="w-6 h-6" />
       </motion.button>
 
-      <BottomSheet isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Nuevo Recordatorio">
+      <BottomSheet isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(false); setEditingId(null); }} title={editingId ? 'Editar Recordatorio' : 'Nuevo Recordatorio'}>
         <div className="space-y-6 pb-8">
           <div>
             <label className="block text-xs font-medium text-text-muted mb-2">Tipo de recordatorio</label>
@@ -292,7 +331,7 @@ function RemindersScreen() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
-              placeholder={type === 'payment' ? 'Ej: Pagar el Gym' : type === 'collection' ? 'Ej: Cobrar a Cliente' : 'Ej: Mandar mensaje'}
+              placeholder={type === 'payment' ? 'Ej: Suscripción de Netflix' : type === 'collection' ? 'Ej: Reintegro de Expensas' : 'Ej: Revisar presupuesto semanal'}
             />
           </div>
 
@@ -303,7 +342,7 @@ function RemindersScreen() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
-              placeholder="Ej: Visa terminada en 1234"
+              placeholder="Ej: Vence el 15 de cada mes"
             />
           </div>
 

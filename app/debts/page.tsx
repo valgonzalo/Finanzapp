@@ -113,34 +113,34 @@ function DebtsScreen() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6 pb-24">
-      <header className="pt-4 space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 lg:p-12 space-y-8 pb-32">
+      <header className="pt-4 space-y-8 max-w-4xl mx-auto">
         <div>
-          <h1 className="text-text-primary text-2xl font-display font-semibold tracking-tight">Lo que me deben</h1>
-          <p className="text-text-secondary text-sm mt-1">Gestioná la plata que te deben</p>
+          <h1 className="text-text-primary text-2xl md:text-5xl font-display font-bold tracking-tight">Lo que me deben</h1>
+          <p className="text-text-secondary text-sm md:text-lg mt-1 md:mt-2">Gestioná la plata que te deben</p>
         </div>
 
-        <div className="bg-gradient-to-br from-surface to-warning/10 rounded-3xl border border-warning/20 p-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-warning/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-          <p className="text-text-secondary text-sm mb-2 font-medium">Total pendiente a cobrar</p>
-          <h2 className="text-5xl font-display font-bold text-warning tracking-tight">
+        <div className="bg-gradient-to-br from-surface to-warning/10 rounded-[2rem] border border-warning/20 p-8 md:p-12 shadow-[0_0_30px_rgba(251,191,36,0.1)] relative overflow-hidden flex flex-col justify-center min-h-[180px] md:min-h-[240px]">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-warning/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+          <p className="text-text-secondary text-sm md:text-lg mb-2 font-medium">Total pendiente a cobrar</p>
+          <h2 className="text-5xl md:text-7xl font-display font-bold text-warning tracking-tight">
             {formatCurrency(totalPending)}
           </h2>
         </div>
 
-        <div className="flex bg-surface-alt/90 rounded-xl p-1 border border-border/50">
+        <div className="flex bg-surface-alt rounded-2xl p-1.5 border border-border/50">
           <button
             onClick={() => setActiveTab('pending')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
-              activeTab === 'pending' ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+            className={`flex-1 py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 ${
+              activeTab === 'pending' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
             Pendientes
           </button>
           <button
             onClick={() => setActiveTab('paid')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
-              activeTab === 'paid' ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+            className={`flex-1 py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 ${
+              activeTab === 'paid' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
             Cobradas
@@ -148,43 +148,43 @@ function DebtsScreen() {
         </div>
       </header>
 
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4 max-w-4xl mx-auto">
         <AnimatePresence>
         {displayedDebts.length > 0 ? (
-          displayedDebts.map(debt => (
+          displayedDebts.map((debt: any) => (
             <motion.div variants={itemVariants} layout key={debt.id}>
               <Link href={`/debts/${debt.id}`} className="block">
-                <div className="bg-surface/90 rounded-2xl border border-border p-5 hover:border-primary/50 transition-colors shadow-sm">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-lg border ${
+                <div className="bg-surface/90 rounded-3xl border border-border p-6 md:p-8 hover:border-primary/50 transition-colors shadow-sm">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-5">
+                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center font-display font-bold text-lg md:text-2xl border ${
                         debt.status === 'paid' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-warning/10 text-warning border-warning/20'
                       }`}>
                         {debt.person_name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-text-primary font-semibold text-lg">{debt.person_name}</p>
-                        <p className={`text-xs font-medium mt-0.5 ${
+                        <p className="text-text-primary font-bold text-lg md:text-2xl">{debt.person_name}</p>
+                        <p className={`text-xs md:text-sm font-medium mt-1 ${
                           debt.status === 'paid' ? 'text-primary' : debt.status === 'partial' ? 'text-blue-400' : 'text-warning'
                         }`}>
                           {debt.status === 'paid' ? 'Cobrado' : debt.status === 'partial' ? 'Cobro parcial' : 'Pendiente'}
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-text-muted" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-text-muted" />
                   </div>
                   
-                  <div className="flex justify-between items-end mt-4">
+                  <div className="flex justify-between items-end mt-6">
                     <div>
-                      <p className="text-xs text-text-muted font-medium mb-1">Total de la deuda</p>
-                      <p className="text-text-primary font-display font-semibold text-xl">
+                      <p className="text-xs md:text-sm text-text-muted font-medium mb-1">Total de la deuda</p>
+                      <p className="text-text-primary font-display font-bold text-xl md:text-3xl">
                         {formatCurrency(debt.total_amount)}
                       </p>
                     </div>
                     {debt.status !== 'paid' && debt.paid_amount > 0 && (
                       <div className="text-right">
-                        <p className="text-xs text-text-muted font-medium mb-1">Falta cobrar</p>
-                        <p className="text-warning font-display font-semibold text-lg">
+                        <p className="text-xs md:text-sm text-text-muted font-medium mb-1">Falta cobrar</p>
+                        <p className="text-warning font-display font-bold text-lg md:text-2xl">
                           {formatCurrency(debt.total_amount - debt.paid_amount)}
                         </p>
                       </div>
@@ -192,16 +192,16 @@ function DebtsScreen() {
                   </div>
 
                   {debt.has_installments === 1 && debt.installments_count && (
-                    <div className="mt-4 pt-4 border-t border-border/50">
-                      <div className="flex justify-between text-xs mb-2">
+                    <div className="mt-6 pt-6 border-t border-border/50">
+                      <div className="flex justify-between text-xs md:text-sm mb-2">
                         <span className="text-text-muted font-medium">Progreso de cuotas</span>
-                        <span className="text-primary font-semibold">
+                        <span className="text-primary font-bold">
                           {Math.round((debt.paid_amount / debt.total_amount) * debt.installments_count)}/{debt.installments_count}
                         </span>
                       </div>
-                      <div className="h-2 bg-surface-alt rounded-full overflow-hidden">
+                      <div className="h-2.5 md:h-3 bg-surface-alt rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-primary rounded-full transition-all duration-500" 
+                          className="h-full bg-primary rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(0,255,136,0.3)]" 
                           style={{ width: `${(debt.paid_amount / debt.total_amount) * 100}%` }}
                         />
                       </div>
@@ -239,7 +239,7 @@ function DebtsScreen() {
               value={personName}
               onChange={(e) => setPersonName(e.target.value)}
               className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
-              placeholder="Ej: Juan Pérez"
+              placeholder="Ej: Franco - Amigo"
             />
           </div>
 
@@ -289,7 +289,7 @@ function DebtsScreen() {
                     }
                   }}
                   className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Ej: 3"
+                  placeholder="Ej: 6"
                 />
               </div>
               <div>
@@ -319,7 +319,7 @@ function DebtsScreen() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
-              placeholder="Ej: Prestamo para el alquiler"
+              placeholder="Ej: Almuerzo del domingo pasado"
             />
           </div>
 

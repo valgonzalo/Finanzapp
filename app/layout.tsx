@@ -10,13 +10,13 @@ const urbanist = Urbanist({
 });
 
 export const metadata: Metadata = {
-  title: 'FinanzasVal',
+  title: 'FinanzApp',
   description: 'App de Finanzas Personales',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'FinanzasVal',
+    title: 'FinanzApp',
   },
   formatDetection: {
     telephone: false,
@@ -39,8 +39,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
         </div>
-        <main className="min-h-screen max-w-md mx-auto md:max-w-2xl relative">
-          {children}
+        <main className="min-h-screen w-full max-w-[2000px] mx-auto relative">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </main>
         <Navigation />
       </body>

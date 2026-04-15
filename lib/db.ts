@@ -48,14 +48,21 @@ export interface Reminder {
   type?: 'payment' | 'collection' | 'general';
 }
 
-export class FinanzasValDB extends Dexie {
+export interface UserSettings {
+  id?: number;
+  userName: string;
+  onboardingCompleted: number;
+}
+
+export class FinanzAppDB extends Dexie {
   transactions!: Table<Transaction>;
   debts!: Table<Debt>;
   debt_installments!: Table<DebtInstallment>;
   reminders!: Table<Reminder>;
+  settings!: Table<UserSettings>;
 
   constructor() {
-    super('FinanzasValDB');
+    super('FinanzAppDB');
     this.version(1).stores({
       transactions: '++id, type, date',
       debts: '++id, status',
@@ -69,7 +76,10 @@ export class FinanzasValDB extends Dexie {
         reminder.type = 'general';
       });
     });
+    this.version(3).stores({
+      settings: '++id'
+    });
   }
 }
 
-export const db = new FinanzasValDB();
+export const db = new FinanzAppDB();

@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/constants';
-import { Plus, ChevronLeft, ChevronRight, Trash2, Wallet } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Trash2, Wallet, Pencil, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import BottomSheet from '@/components/BottomSheet';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
@@ -36,12 +36,26 @@ function TransactionsScreen() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleEdit = (t: any) => {
+    setEditingId(t.id);
+    setType(t.type);
+    setAmount(new Intl.NumberFormat('es-AR').format(t.amount));
+    setCategory(t.category);
+    setDescription(t.description || '');
+    setDate(t.date);
+    setIsAddModalOpen(true);
+  };
 
   useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['all', 'income', 'expense'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+    
     if (searchParams.get('add') === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsAddModalOpen(true);
-      // Remove query param without refreshing
       router.replace('/transactions', { scroll: false });
     }
   }, [searchParams, router]);
@@ -86,16 +100,27 @@ function TransactionsScreen() {
     
     const parsedAmount = parseFloat(amount.replace(/\./g, ''));
 
-    await db.transactions.add({
-      type,
-      amount: parsedAmount,
-      category,
-      description,
-      date,
-      created_at: new Date().toISOString()
-    });
+    if (editingId) {
+      await db.transactions.update(editingId, {
+        type,
+        amount: parsedAmount,
+        category,
+        description,
+        date
+      });
+    } else {
+      await db.transactions.add({
+        type,
+        amount: parsedAmount,
+        category,
+        description,
+        date,
+        created_at: new Date().toISOString()
+      });
+    }
 
     setIsAddModalOpen(false);
+    setEditingId(null);
     setAmount('');
     setCategory('');
     setDescription('');
@@ -124,25 +149,25 @@ function TransactionsScreen() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6 pb-24">
-      <header className="pt-4 space-y-4">
-        <div className="flex justify-between items-center bg-surface-alt/90 rounded-full p-1 border border-border/50">
-          <button onClick={handlePrevMonth} className="p-2 text-text-muted hover:text-text-primary transition-colors">
-            <ChevronLeft className="w-5 h-5" />
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 lg:p-12 space-y-8 pb-32">
+      <header className="pt-4 space-y-6 max-w-4xl mx-auto">
+        <div className="flex justify-between items-center bg-surface-alt rounded-full p-1.5 border border-border/50 shadow-sm">
+          <button onClick={handlePrevMonth} className="p-2 md:p-3 text-text-muted hover:text-text-primary transition-colors">
+            <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
           </button>
-          <span suppressHydrationWarning className="font-display font-semibold capitalize text-lg">{monthName}</span>
-          <button onClick={handleNextMonth} className="p-2 text-text-muted hover:text-text-primary transition-colors">
-            <ChevronRight className="w-5 h-5" />
+          <span suppressHydrationWarning className="font-display font-bold capitalize text-lg md:text-2xl">{monthName}</span>
+          <button onClick={handleNextMonth} className="p-2 md:p-3 text-text-muted hover:text-text-primary transition-colors">
+            <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
           </button>
         </div>
 
-        <div className="flex bg-surface-alt/90 rounded-xl p-1 border border-border/50">
+        <div className="flex bg-surface-alt rounded-2xl p-1.5 border border-border/50">
           {['all', 'income', 'expense'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
-                activeTab === tab ? 'bg-surface text-text-primary shadow-md scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
+              className={`flex-1 py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 ${
+                activeTab === tab ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
               }`}
             >
               {tab === 'all' ? 'Todos' : tab === 'income' ? 'Ingresos' : 'Gastos'}
@@ -150,56 +175,78 @@ function TransactionsScreen() {
           ))}
         </div>
 
-        <div className="flex justify-between items-center bg-surface/90 p-5 rounded-2xl border border-border shadow-lg">
-          <div>
-            <p className="text-xs text-text-muted font-medium">Ingresos</p>
-            <p className="text-primary font-semibold text-lg">{formatCurrency(income)}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-surface-alt rounded-[2rem] p-6 md:p-8 border border-border/50 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+              <ArrowUpRight className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">Ingresos</p>
+              <p className="text-xl md:text-2xl font-display font-bold text-primary tracking-tight">{formatCurrency(income)}</p>
+            </div>
           </div>
-          <div className="w-px h-10 bg-border/50"></div>
-          <div>
-            <p className="text-xs text-text-muted font-medium">Gastos</p>
-            <p className="text-error font-semibold text-lg">{formatCurrency(expense)}</p>
+
+          <div className="flex items-center gap-4 py-4 md:py-0 border-y md:border-y-0 md:border-x border-border/30 px-0 md:px-6">
+            <div className="w-12 h-12 rounded-2xl bg-error/10 flex items-center justify-center border border-error/20">
+              <ArrowDownRight className="w-6 h-6 text-error" />
+            </div>
+            <div>
+              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">Gastos</p>
+              <p className="text-xl md:text-2xl font-display font-bold text-error tracking-tight">{formatCurrency(expense)}</p>
+            </div>
           </div>
-          <div className="w-px h-10 bg-border/50"></div>
-          <div>
-            <p className="text-xs text-text-muted font-medium">Neto</p>
-            <p className={`font-semibold text-lg ${balance >= 0 ? 'text-primary' : 'text-error'}`}>
-              {formatCurrency(balance)}
-            </p>
+
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${balance >= 0 ? 'bg-primary/10 border-primary/20' : 'bg-error/10 border-error/20'}`}>
+              <Wallet className={`w-6 h-6 ${balance >= 0 ? 'text-primary' : 'text-error'}`} />
+            </div>
+            <div>
+              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">Balance Neto</p>
+              <p className={`text-xl md:text-2xl font-display font-bold tracking-tight ${balance >= 0 ? 'text-primary' : 'text-error'}`}>
+                {formatCurrency(balance)}
+              </p>
+            </div>
           </div>
         </div>
       </header>
 
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8 max-w-4xl mx-auto">
         <AnimatePresence>
           {Object.keys(groupedTransactions).length > 0 ? (
-            Object.entries(groupedTransactions).map(([date, trans]) => (
+            Object.entries(groupedTransactions).map(([date, trans]: [string, any]) => (
               <motion.div variants={itemVariants} layout key={date} className="space-y-3">
-                <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider pl-2">
+                <h4 className="text-xs md:text-sm font-semibold text-text-muted uppercase tracking-wider pl-2">
                   {formatRelativeDate(date)}
                 </h4>
-                <div className="bg-surface/90 rounded-2xl border border-border overflow-hidden shadow-sm">
-                  {trans.map((t, i) => {
+                <div className="bg-surface/90 rounded-3xl border border-border overflow-hidden shadow-sm">
+                  {trans.map((t: any, i: number) => {
                     const cat = (t.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).find(c => c.id === t.category);
                     const Icon = cat?.icon || Wallet;
                     return (
-                      <motion.div layout key={t.id} className={`flex items-center justify-between p-4 ${i !== trans.length - 1 ? 'border-b border-border/50' : ''}`}>
+                      <motion.div layout key={t.id} className={`flex items-center justify-between p-4 md:p-6 ${i !== trans.length - 1 ? 'border-b border-border/50' : ''}`}>
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${t.type === 'income' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-error/10 text-error border-error/20'}`}>
-                            <Icon className="w-6 h-6" />
+                          <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center border ${t.type === 'income' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-error/10 text-error border-error/20'}`}>
+                            <Icon className="w-6 h-6 md:w-7 md:h-7" />
                           </div>
                           <div>
-                            <p className="text-text-primary font-semibold">{cat?.label || 'Otro'}</p>
-                            {t.description && <p className="text-xs text-text-muted mt-0.5">{t.description}</p>}
+                            <p className="text-text-primary font-semibold md:text-lg">{cat?.label || 'Otro'}</p>
+                            {t.description && <p className="text-xs md:text-sm text-text-muted mt-0.5">{t.description}</p>}
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <p className={`font-display font-semibold text-lg ${t.type === 'income' ? 'text-primary' : 'text-text-primary'}`}>
+                        <div className="flex items-center gap-2 md:gap-4">
+                          <p className={`font-display font-semibold text-lg md:text-2xl ${t.type === 'income' ? 'text-primary' : 'text-text-primary'}`}>
                             {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                           </p>
-                          <button onClick={() => handleDelete(t.id)} className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-full transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <button onClick={() => handleEdit(t)} className="p-2 text-text-muted hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+                              <Pencil className="w-5 h-5 md:w-6 md:h-6" />
+                            </button>
+                            <button onClick={() => handleDelete(t.id)} className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-full transition-colors">
+                              <Trash2 className="w-5 h-5 md:w-6 md:h-6" />
+                            </button>
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -226,7 +273,7 @@ function TransactionsScreen() {
         <Plus className="w-6 h-6" />
       </motion.button>
 
-      <BottomSheet isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Nueva Transacción">
+      <BottomSheet isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(false); setEditingId(null); }} title={editingId ? 'Editar Transacción' : 'Nueva Transacción'}>
         <div className="space-y-6 pb-8">
           <div className="flex bg-surface-alt rounded-xl p-1 border border-border/50">
             <button
@@ -294,7 +341,7 @@ function TransactionsScreen() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
-              placeholder="Ej: Supermercado"
+              placeholder="Ej: Almuerzo con el equipo"
             />
           </div>
 
