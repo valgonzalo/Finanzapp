@@ -45,7 +45,16 @@ function RemindersScreen() {
   const [time, setTime] = useState('09:00');
   const [recurrence, setRecurrence] = useState<'once' | 'daily' | 'weekly' | 'monthly'>('once');
   const [type, setType] = useState<'payment' | 'collection' | 'general'>('general');
+  const [hasInstallments, setHasInstallments] = useState(false);
+  const [totalInstallments, setTotalInstallments] = useState('');
+  const [currentInstallment, setCurrentInstallment] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
+  
+  useEffect(() => {
+    if (recurrence !== 'monthly') {
+      setHasInstallments(false);
+    }
+  }, [recurrence]);
 
   const handleEdit = (r: any) => {
     setEditingId(r.id);
@@ -56,6 +65,9 @@ function RemindersScreen() {
     setTime(r.time);
     setRecurrence(r.recurrence);
     setType(r.type);
+    setHasInstallments(!!r.total_installments);
+    setTotalInstallments(r.total_installments ? String(r.total_installments) : '');
+    setCurrentInstallment(r.current_installment ? String(r.current_installment) : '');
     setIsAddModalOpen(true);
   };
 
@@ -111,7 +123,9 @@ function RemindersScreen() {
         date,
         time,
         recurrence,
-        type
+        type,
+        total_installments: hasInstallments && totalInstallments ? parseInt(totalInstallments) : undefined,
+        current_installment: hasInstallments && currentInstallment ? parseInt(currentInstallment) : undefined
       });
     } else {
       await db.reminders.add({
@@ -122,6 +136,8 @@ function RemindersScreen() {
         time,
         recurrence,
         type,
+        total_installments: hasInstallments && totalInstallments ? parseInt(totalInstallments) : undefined,
+        current_installment: hasInstallments && currentInstallment ? parseInt(currentInstallment) : undefined,
         is_active: 1,
         created_at: new Date().toISOString()
       });
@@ -136,6 +152,9 @@ function RemindersScreen() {
     setTime('09:00');
     setRecurrence('once');
     setType('general');
+    setHasInstallments(false);
+    setTotalInstallments('');
+    setCurrentInstallment('');
   };
 
   const handleToggleActive = async (id: number, currentStatus: number) => {
@@ -223,9 +242,35 @@ function RemindersScreen() {
                     {getIconForType(reminder.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold text-lg md:text-2xl truncate ${reminder.is_active ? 'text-text-primary' : 'text-text-muted line-through'}`}>{reminder.title}</h3>
+                    <h3 className={`font-bold text-lg md:text-2xl truncate flex items-center gap-2 ${reminder.is_active ? 'text-text-primary' : 'text-text-muted line-through'}`}>
+                      {reminder.title}
+                      {reminder.total_installments && (
+                        <span className="text-[10px] md:text-xs font-medium bg-surface-alt text-text-muted px-2 py-0.5 rounded-full border border-border/50 whitespace-nowrap">
+                          {reminder.current_installment || 1}/{reminder.total_installments}
+                        </span>
+                      )}
+                    </h3>
                     {reminder.description && (
                       <p className="text-xs md:text-base text-text-muted mt-1">{reminder.description}</p>
+                    )}
+                    
+                    {reminder.total_installments && (
+                      <div className="mt-4 space-y-1.5">
+                        <div className="flex justify-between items-center text-[10px] md:text-xs font-medium">
+                          <span className="text-text-muted">Progreso de pago</span>
+                          <span className={reminder.type === 'payment' ? 'text-error' : 'text-primary'}>
+                            {Math.round(((reminder.current_installment || 1) / reminder.total_installments) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 md:h-2 bg-surface-alt rounded-full overflow-hidden border border-border/50">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${((reminder.current_installment || 1) / reminder.total_installments) * 100}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className={`h-full rounded-full ${reminder.type === 'payment' ? 'bg-error shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-primary shadow-[0_0_8px_rgba(0,255,136,0.4)]'}`}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -403,6 +448,51 @@ function RemindersScreen() {
               ))}
             </div>
           </div>
+
+          {(type === 'payment' || type === 'collection') && recurrence === 'monthly' && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <button
+                type="button"
+                onClick={() => setHasInstallments(!hasInstallments)}
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
+                  hasInstallments ? 'bg-primary/5 border-primary/30 text-primary' : 'bg-surface-alt border-border text-text-muted hover:bg-surface-alt/80'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <RotateCw className={`w-4 h-4 ${hasInstallments ? 'animate-spin-slow' : ''}`} />
+                  <span className="text-sm font-semibold">¿Es un pago en cuotas?</span>
+                </div>
+                <div className={`w-10 h-5 rounded-full transition-colors relative ${hasInstallments ? 'bg-primary' : 'bg-surface border border-border'}`}>
+                  <div className={`w-3 h-3 rounded-full bg-white absolute top-1 transition-transform ${hasInstallments ? 'translate-x-6' : 'translate-x-1'}`} />
+                </div>
+              </button>
+
+              {hasInstallments && (
+                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-2">Cuota actual</label>
+                    <input 
+                      type="number" 
+                      value={currentInstallment}
+                      onChange={(e) => setCurrentInstallment(e.target.value)}
+                      className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+                      placeholder="Ej: 1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-2">Total cuotas</label>
+                    <input 
+                      type="number" 
+                      value={totalInstallments}
+                      onChange={(e) => setTotalInstallments(e.target.value)}
+                      className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"
+                      placeholder="Ej: 12"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <motion.button 
             whileTap={{ scale: 0.95 }}

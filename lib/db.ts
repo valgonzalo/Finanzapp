@@ -46,6 +46,8 @@ export interface Reminder {
   notification_id?: string;
   created_at?: string;
   type?: 'payment' | 'collection' | 'general';
+  total_installments?: number;
+  current_installment?: number;
 }
 
 export interface UserSettings {
@@ -78,6 +80,9 @@ export class FinanzAppDB extends Dexie {
     });
     this.version(3).stores({
       settings: '++id'
+    });
+    this.version(4).stores({
+      reminders: '++id, date, is_active, type'
     });
   }
 }
