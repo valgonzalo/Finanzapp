@@ -38,7 +38,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
 
   // If onboarding IS completed, we render the full system
   return (
-    <div className="pb-20 md:pb-0 md:pl-20 lg:pl-24 xl:pl-28 transition-all duration-500">
+    <div className="pb-20 md:pb-0 md:pl-24 lg:pl-28 xl:pl-32 transition-all duration-500">
       {children}
       <Navigation />
       <FloatingActions />

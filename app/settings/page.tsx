@@ -49,7 +49,7 @@ export default function SettingsPage() {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-4 md:p-8 lg:p-12 space-y-8 pb-32 max-w-4xl mx-auto"
+      className="p-4 md:p-10 lg:p-16 space-y-10 md:space-y-12 pb-32 max-w-7xl mx-auto"
     >
       <header className="pt-4 flex items-center justify-between">
         <div>

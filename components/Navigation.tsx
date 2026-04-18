@@ -23,63 +23,63 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-border pb-safe pt-2 px-2 z-50 md:top-0 md:bottom-0 md:right-auto md:w-20 lg:w-24 xl:w-28 md:border-t-0 md:border-r md:flex md:flex-col md:pt-10 md:pb-10 md:px-0">
-      <div className="flex justify-around items-center md:flex-col md:gap-10 h-full max-w-[500px] mx-auto md:max-w-none">
-        <div className="flex justify-around md:justify-start items-center w-full md:flex-col md:gap-8">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center min-w-[60px] md:w-full gap-1 transition-all duration-300 relative group px-1",
-                  isActive ? "text-primary" : "text-text-muted hover:text-text-secondary"
-                )}
-              >
-                <div className={cn(
-                  "p-2 md:p-2.5 rounded-2xl transition-all duration-300",
-                  isActive ? "bg-primary/10 shadow-[0_0_15px_rgba(0,255,136,0.2)]" : "group-hover:bg-surface-alt"
-                )}>
-                  <Icon className="w-5 h-5 xs:w-6 xs:h-6 md:w-7 md:h-7" strokeWidth={isActive ? 2.5 : 2} />
-                </div>
-                <span className={cn(
-                  "text-[9px] xs:text-[10px] md:text-[11px] font-semibold tracking-wide uppercase transition-all text-center leading-tight",
-                  "whitespace-nowrap md:whitespace-normal overflow-hidden md:overflow-visible text-ellipsis md:text-clip max-w-[65px] md:max-w-none",
-                  isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
-                )}>
-                  {item.label}
-                </span>
-                {isActive && (
-                  <motion.div 
-                    layoutId="nav-indicator"
-                    className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-12 bg-primary rounded-l-full hidden md:block shadow-[0_0_10px_rgba(0,255,136,0.5)]"
-                  />
-                )}
-              </Link>
-            );
-          })}
-        </div>
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-border pb-safe pt-2 px-0 z-50 md:top-0 md:bottom-0 md:right-auto md:w-24 lg:w-28 xl:w-32 md:border-t-0 md:border-r md:flex md:flex-col md:pt-12 md:pb-8 md:px-0">
+      {/* Mobile Grid / Desktop Column */}
+      <div className="grid grid-cols-5 md:flex md:flex-col h-full w-full max-w-lg mx-auto md:max-w-none md:gap-6">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center py-2 transition-all duration-300 relative group outline-none",
+                isActive ? "text-primary" : "text-text-muted hover:text-text-secondary"
+              )}
+            >
+              <div className={cn(
+                "p-2.5 rounded-2xl transition-all duration-300 flex items-center justify-center",
+                isActive ? "bg-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.15)]" : "group-hover:bg-surface-alt"
+              )}>
+                <Icon className="w-6 h-6 md:w-7 md:h-7" strokeWidth={isActive ? 2.5 : 2} />
+              </div>
+              <span className={cn(
+                "text-[9px] md:text-[10px] lg:text-[11px] font-bold tracking-wide uppercase transition-all text-center mt-1.5 px-2 leading-tight w-full",
+                "line-clamp-1 md:line-clamp-2 md:whitespace-normal",
+                isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+              )}>
+                {item.label}
+              </span>
+              {isActive && (
+                <motion.div 
+                  layoutId="nav-indicator"
+                  className="absolute -right-[0.5px] top-1/2 -translate-y-1/2 w-[3px] h-10 bg-primary rounded-l-full hidden md:block shadow-[0_0_15px_rgba(0,255,136,0.4)]"
+                />
+              )}
+            </Link>
+          );
+        })}
 
-        <div className="md:mt-auto py-2 md:py-0">
+        {/* Settings at the end on both mobile and desktop */}
+        <div className="flex md:mt-auto items-center justify-center">
           <Link
             href="/settings"
             className={cn(
-              "flex flex-col items-center justify-center min-w-[60px] md:w-full gap-1 transition-all duration-300 relative group px-1",
+              "flex flex-col items-center justify-center py-2 w-full transition-all duration-300 relative group outline-none",
               pathname === '/settings' ? "text-primary" : "text-text-muted hover:text-text-secondary"
             )}
           >
             <div className={cn(
-              "p-2 md:p-2.5 rounded-2xl transition-all duration-300",
-              pathname === '/settings' ? "bg-primary/10 shadow-[0_0_15px_rgba(0,255,136,0.2)]" : "group-hover:bg-surface-alt"
+              "p-2.5 rounded-2xl transition-all duration-300 flex items-center justify-center",
+              pathname === '/settings' ? "bg-primary/10 shadow-[0_0_20px_rgba(0,255,136,0.15)]" : "group-hover:bg-surface-alt"
             )}>
-              <Settings className="w-5 h-5 xs:w-6 xs:h-6 md:w-7 md:h-7" />
+              <Settings className="w-6 h-6 md:w-7 md:h-7" />
             </div>
             <span className={cn(
-              "text-[9px] xs:text-[10px] md:text-[11px] font-semibold tracking-wide uppercase transition-all text-center leading-tight",
-              "whitespace-nowrap md:whitespace-normal overflow-hidden md:overflow-visible text-ellipsis md:text-clip max-w-[65px] md:max-w-none",
-              pathname === '/settings' ? "opacity-100" : "opacity-100"
+              "text-[9px] md:text-[10px] lg:text-[11px] font-bold tracking-wide uppercase transition-all text-center mt-1.5 px-2 leading-tight w-full",
+              "line-clamp-1 md:line-clamp-2 md:whitespace-normal",
+              pathname === '/settings' ? "opacity-100" : "opacity-60 group-hover:opacity-100"
             )}>
               {t.dashboard.settings}
             </span>
