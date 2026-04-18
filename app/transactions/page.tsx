@@ -10,6 +10,8 @@ import BottomSheet from '@/components/BottomSheet';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { CurrencyInput } from '@/components/CurrencyInput';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { Suspense } from 'react';
 
@@ -25,6 +27,8 @@ const EMPTY_ARRAY: any[] = [];
 
 function TransactionsScreen() {
   const router = useRouter();
+  const { formatCurrency, formatAmount, code } = useCurrency();
+  const { t, lang } = useTranslation();
   const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense'>('all');
@@ -41,7 +45,7 @@ function TransactionsScreen() {
   const handleEdit = (t: any) => {
     setEditingId(t.id);
     setType(t.type);
-    setAmount(new Intl.NumberFormat('es-AR').format(t.amount));
+    setAmount(formatAmount(t.amount));
     setCategory(t.category);
     setDescription(t.description || '');
     setDate(t.date);
@@ -60,7 +64,7 @@ function TransactionsScreen() {
     }
   }, [searchParams, router]);
 
-  const monthName = currentDate.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const monthName = currentDate.toLocaleDateString(lang === 'es' ? 'es-AR' : lang === 'pt' ? 'pt-BR' : 'en-US', { month: 'long', year: 'numeric' });
 
   const transactions = useLiveQuery(() => 
     db.transactions.toArray()
@@ -175,7 +179,8 @@ function TransactionsScreen() {
                 activeTab === tab ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
               }`}
             >
-              {tab === 'all' ? 'Todos' : tab === 'income' ? 'Ingresos' : 'Gastos'}
+              {tab === 'all' ? (lang === 'en' ? 'All' : lang === 'pt' ? 'Todos' : 'Todos') : 
+               tab === 'income' ? t.dashboard.income : t.dashboard.expenses}
             </button>
           ))}
         </div>
@@ -188,7 +193,7 @@ function TransactionsScreen() {
               <ArrowUpRight className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">Ingresos</p>
+              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">{t.dashboard.income}</p>
               <p className="text-xl md:text-2xl font-display font-bold text-primary tracking-tight">{formatCurrency(income)}</p>
             </div>
           </div>
@@ -198,7 +203,7 @@ function TransactionsScreen() {
               <ArrowDownRight className="w-6 h-6 text-error" />
             </div>
             <div>
-              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">Gastos</p>
+              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">{t.dashboard.expenses}</p>
               <p className="text-xl md:text-2xl font-display font-bold text-error tracking-tight">{formatCurrency(expense)}</p>
             </div>
           </div>
@@ -208,7 +213,7 @@ function TransactionsScreen() {
               <Wallet className={`w-6 h-6 ${balance >= 0 ? 'text-primary' : 'text-error'}`} />
             </div>
             <div>
-              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">Balance Neto</p>
+              <p className="text-xs md:text-sm text-text-muted font-medium mb-0.5">{t.dashboard.net_balance}</p>
               <p className={`text-xl md:text-2xl font-display font-bold tracking-tight ${balance >= 0 ? 'text-primary' : 'text-error'}`}>
                 {formatCurrency(balance)}
               </p>

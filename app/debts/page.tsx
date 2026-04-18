@@ -11,6 +11,8 @@ import Link from 'next/link';
 
 import { motion, AnimatePresence } from 'motion/react';
 import { CurrencyInput } from '@/components/CurrencyInput';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { Suspense } from 'react';
 
@@ -27,6 +29,8 @@ const EMPTY_ARRAY: any[] = [];
 function DebtsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { formatCurrency, formatAmount, symbol } = useCurrency();
+  const { t, lang } = useTranslation();
   const [activeTab, setActiveTab] = useState<'pending' | 'paid'>('pending');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -135,7 +139,7 @@ function DebtsScreen() {
               activeTab === 'pending' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
-            Pendientes
+            {lang === 'en' ? 'Pending' : lang === 'pt' ? 'Pendentes' : 'Pendientes'}
           </button>
           <button
             onClick={() => setActiveTab('paid')}
@@ -143,7 +147,7 @@ function DebtsScreen() {
               activeTab === 'paid' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
-            Cobradas
+            {lang === 'en' ? 'Paid' : lang === 'pt' ? 'Pagas' : 'Cobradas'}
           </button>
         </div>
       </header>
@@ -247,7 +251,7 @@ function DebtsScreen() {
                   const parsedTotal = parseFloat(val.replace(/\./g, ''));
                   if (!isNaN(parsedTotal)) {
                     const instAmount = Math.round(parsedTotal / parseInt(installmentsCount));
-                    setInstallmentAmount(new Intl.NumberFormat('es-AR').format(instAmount));
+                    setInstallmentAmount(formatAmount(instAmount));
                   }
                 }
               }} 
@@ -279,7 +283,7 @@ function DebtsScreen() {
                     if (totalAmount && e.target.value) {
                       const parsedTotal = parseFloat(totalAmount.replace(/\./g, ''));
                       const instAmount = Math.round(parsedTotal / parseInt(e.target.value));
-                      setInstallmentAmount(new Intl.NumberFormat('es-AR').format(instAmount));
+                      setInstallmentAmount(formatAmount(instAmount));
                     }
                   }}
                   className="w-full bg-surface-alt border border-border rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-primary transition-colors"

@@ -9,6 +9,8 @@ import BottomSheet from '@/components/BottomSheet';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { CurrencyInput } from '@/components/CurrencyInput';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { Suspense } from 'react';
 
@@ -20,12 +22,12 @@ export default function RemindersPage() {
   );
 }
 
-const getRecurrenceLabel = (recurrence: string) => {
+const getRecurrenceLabel = (recurrence: string, lang: string = 'es') => {
   switch (recurrence) {
-    case 'daily': return 'Diario';
-    case 'weekly': return 'Semanal';
-    case 'monthly': return 'Mensual';
-    default: return 'Una vez';
+    case 'daily': return lang === 'en' ? 'Daily' : lang === 'pt' ? 'Diário' : 'Diario';
+    case 'weekly': return lang === 'en' ? 'Weekly' : lang === 'pt' ? 'Semanal' : 'Semanal';
+    case 'monthly': return lang === 'en' ? 'Monthly' : lang === 'pt' ? 'Mensal' : 'Mensual';
+    default: return lang === 'en' ? 'Once' : lang === 'pt' ? 'Uma vez' : 'Una vez';
   }
 };
 
@@ -34,6 +36,8 @@ const EMPTY_ARRAY: any[] = [];
 function RemindersScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { formatCurrency, formatAmount } = useCurrency();
+  const { t, lang } = useTranslation();
   const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -60,7 +64,7 @@ function RemindersScreen() {
     setEditingId(r.id);
     setTitle(r.title);
     setDescription(r.description || '');
-    setAmount(r.amount ? new Intl.NumberFormat('es-AR').format(r.amount) : '');
+    setAmount(r.amount ? formatAmount(r.amount) : '');
     setDate(r.date);
     setTime(r.time);
     setRecurrence(r.recurrence);
@@ -216,7 +220,7 @@ function RemindersScreen() {
               activeTab === 'active' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
-            Activos
+            {lang === 'en' ? 'Active' : lang === 'pt' ? 'Ativos' : 'Activos'}
           </button>
           <button
             onClick={() => setActiveTab('past')}
@@ -224,7 +228,7 @@ function RemindersScreen() {
               activeTab === 'past' ? 'bg-surface text-text-primary shadow-lg scale-100' : 'text-text-muted hover:text-text-secondary scale-95'
             }`}
           >
-            Pasados
+            {lang === 'en' ? 'Past' : lang === 'pt' ? 'Passados' : 'Pasados'}
           </button>
         </div>
       </header>
@@ -293,7 +297,7 @@ function RemindersScreen() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs md:text-sm text-text-muted bg-surface-alt px-3 py-1.5 rounded-lg border border-border/50">
                   <RotateCw className="w-4 h-4" />
-                  <span>{getRecurrenceLabel(reminder.recurrence)}</span>
+                  <span>{getRecurrenceLabel(reminder.recurrence, lang)}</span>
                 </div>
               </div>
 

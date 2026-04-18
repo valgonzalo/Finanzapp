@@ -54,6 +54,8 @@ export interface UserSettings {
   id?: number;
   userName: string;
   onboardingCompleted: number;
+  currency?: string;
+  language?: string;
 }
 
 export class FinanzAppDB extends Dexie {
@@ -83,6 +85,9 @@ export class FinanzAppDB extends Dexie {
     });
     this.version(4).stores({
       reminders: '++id, date, is_active, type'
+    });
+    this.version(5).stores({
+      settings: '++id'
     });
   }
 }

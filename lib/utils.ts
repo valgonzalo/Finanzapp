@@ -5,14 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat('es-AR', {
+export const formatAmount = (amount: number, locale: string = 'es-AR') => {
+  return new Intl.NumberFormat(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount);
 };
 
-export const formatCurrency = (amount: number) => `$ ${formatAmount(amount)}`;
+export const formatCurrency = (amount: number, symbol: string = '$', locale: string = 'es-AR') => {
+  return `${symbol} ${formatAmount(amount, locale)}`;
+};
 
 export const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);

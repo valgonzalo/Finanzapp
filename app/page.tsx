@@ -3,21 +3,25 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { formatCurrency, formatRelativeDate } from '@/lib/utils';
+import { formatRelativeDate } from '@/lib/utils';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Plus, Wallet, Bell, ChevronRight, ArrowLeftRight, Users, Pencil, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Plus, Wallet, Bell, ChevronRight, ArrowLeftRight, Users, Pencil, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import BottomSheet from '@/components/BottomSheet';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import Onboarding from '@/components/Onboarding';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const EMPTY_ARRAY: any[] = [];
 
 export default function Dashboard() {
   const router = useRouter();
-  const [greeting, setGreeting] = useState('Hola 👋');
+  const { formatCurrency, symbol } = useCurrency();
+  const { t, lang } = useTranslation();
+  const [greeting, setGreeting] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const settings = useLiveQuery(() => db.settings.toArray());
@@ -27,18 +31,18 @@ export default function Dashboard() {
 
   useEffect(() => {
     const hour = new Date().getHours();
-    let baseGreeting = 'Hola';
+    let baseGreeting = t.dashboard.greeting;
     
-    if (hour < 12) baseGreeting = 'Buenos días';
-    else if (hour < 20) baseGreeting = 'Buenas tardes';
-    else baseGreeting = 'Buenas noches';
+    if (hour < 12) baseGreeting = t.dashboard.morning;
+    else if (hour < 20) baseGreeting = t.dashboard.afternoon;
+    else baseGreeting = t.dashboard.night;
 
     setGreeting(`${baseGreeting}${userName ? `, ${userName}` : ''} 👋`);
-  }, [userName]);
+  }, [userName, t]);
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
-  const monthName = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const monthName = new Date().toLocaleDateString(lang === 'es' ? 'es-AR' : lang === 'pt' ? 'pt-BR' : 'en-US', { month: 'long', year: 'numeric' });
 
   const transactions = useLiveQuery(() => 
     db.transactions.toArray()
@@ -114,7 +118,7 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </div>
     );
-  }, [chartData]);
+  }, [chartData, formatCurrency]);
 
   const pendingDebts = useLiveQuery(() => 
     db.debts.where('status').notEqual('paid').limit(3).toArray()
@@ -181,9 +185,18 @@ export default function Dashboard() {
       className="p-4 md:p-8 lg:p-12 space-y-8"
     >
       <motion.header variants={itemVariants} className="flex justify-between items-center pt-4 z-10 pb-4">
-        <div>
-          <h1 suppressHydrationWarning className="text-text-primary text-2xl md:text-4xl font-display font-semibold tracking-tight">{greeting}</h1>
-          <p suppressHydrationWarning className="text-text-secondary text-sm md:text-base mt-1">Acá está tu resumen de {monthName}</p>
+        <div className="flex items-center gap-6 justify-between w-full">
+          <div>
+            <h1 suppressHydrationWarning className="text-text-primary text-2xl md:text-4xl font-display font-semibold tracking-tight">{greeting}</h1>
+            <p suppressHydrationWarning className="text-text-secondary text-sm md:text-base mt-1">Acá está tu resumen de {monthName}</p>
+          </div>
+          <div className="hidden md:flex items-center gap-3 bg-primary/5 border border-primary/20 px-4 py-2 rounded-2xl">
+            <ShieldCheck className="w-5 h-5 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider leading-none">Soberanía de Datos</span>
+              <span className="text-[10px] text-text-muted mt-1 leading-none italic">Local & Privado</span>
+            </div>
+          </div>
         </div>
       </motion.header>
 
@@ -196,12 +209,12 @@ export default function Dashboard() {
             </div>
             <div>
               <h3 className="font-display font-bold text-lg md:text-xl text-text-primary">
-                {urgentItems.length > 0 ? 'Avisos de Vencimiento' : 'Todo al día'}
+                {urgentItems.length > 0 ? t.dashboard.overdue_notices : t.dashboard.all_up_to_date}
               </h3>
               <p className="text-text-secondary text-sm md:text-base">
                 {urgentItems.length > 0 
-                  ? `Tenés ${urgentItems.length} pendiente${urgentItems.length > 1 ? 's' : ''} para hoy o vencido${urgentItems.length > 1 ? 's' : ''}.` 
-                  : 'No tenés pagos ni deudas vencidas. ¡Buen trabajo!'}
+                  ? `Tenés ${urgentItems.length} ${t.dashboard.pending_notices}.` 
+                  : t.dashboard.no_overdue}
               </p>
             </div>
           </div>
@@ -246,13 +259,13 @@ export default function Dashboard() {
         {/* Balance Card */}
         <motion.div variants={itemVariants} className="bg-gradient-to-br from-surface to-primary/10 rounded-3xl border border-primary/20 p-6 md:p-8 shadow-[0_0_30px_rgba(0,255,136,0.1)] relative overflow-hidden flex flex-col justify-center">
           <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-          <p className="text-text-secondary text-sm md:text-base mb-2 font-medium">Balance neto</p>
+          <p className="text-text-secondary text-sm md:text-base mb-2 font-medium">{t.dashboard.net_balance}</p>
           <h2 className={`text-5xl md:text-7xl font-display font-bold mb-8 tracking-tight ${balance >= 0 ? 'text-primary' : 'text-error'}`}>
             {formatCurrency(balance)}
           </h2>
           {totalPendingDebts > 0 && (
             <div className="flex items-center gap-2 mb-8 -mt-6 bg-warning/10 w-fit px-3 py-1 rounded-full border border-warning/20">
-              <p className="text-warning text-[10px] md:text-xs font-bold uppercase tracking-wider">A cobrar: {formatCurrency(totalPendingDebts)}</p>
+              <p className="text-warning text-[10px] md:text-xs font-bold uppercase tracking-wider">{t.dashboard.to_collect}: {formatCurrency(totalPendingDebts)}</p>
             </div>
           )}
           <div className="flex gap-8">
@@ -264,7 +277,7 @@ export default function Dashboard() {
                 <ArrowUpRight className="w-6 h-6 md:w-7 md:h-7 text-primary" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-text-muted font-medium group-hover/item:text-primary transition-colors">Ingresos</p>
+                <p className="text-xs md:text-sm text-text-muted font-medium group-hover/item:text-primary transition-colors">{t.dashboard.income}</p>
                 <p className="text-lg md:text-2xl font-semibold text-primary">{formatCurrency(income)}</p>
               </div>
             </div>
@@ -276,7 +289,7 @@ export default function Dashboard() {
                 <ArrowDownRight className="w-6 h-6 md:w-7 md:h-7 text-error" />
               </div>
               <div>
-                <p className="text-xs md:text-sm text-text-muted font-medium group-hover/item:text-error transition-colors">Gastos</p>
+                <p className="text-xs md:text-sm text-text-muted font-medium group-hover/item:text-error transition-colors">{t.dashboard.expenses}</p>
                 <p className="text-lg md:text-2xl font-semibold text-error">{formatCurrency(expense)}</p>
               </div>
             </div>
@@ -295,11 +308,11 @@ export default function Dashboard() {
         <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 md:p-8 shadow-lg">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl">Me deben</h3>
+              <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl">{t.dashboard.me_debten}</h3>
               <p className="text-warning font-display font-bold text-2xl md:text-3xl mt-1">{formatCurrency(totalPendingDebts)}</p>
             </div>
             <Link href="/debts" className="text-primary text-sm font-medium flex items-center bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors">
-              Ver todas <ChevronRight className="w-4 h-4 ml-1" />
+              {t.dashboard.see_all} <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </div>
           <div className="space-y-4">
@@ -350,9 +363,9 @@ export default function Dashboard() {
         {/* Reminders Card */}
         <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 md:p-8 shadow-lg">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl">Esta semana</h3>
+            <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl">{t.dashboard.this_week}</h3>
             <Link href="/reminders" className="text-primary text-sm font-medium flex items-center bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors">
-              Ver todos <ChevronRight className="w-4 h-4 ml-1" />
+              {t.dashboard.see_all} <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </div>
           <div className="space-y-4">
