@@ -7,130 +7,183 @@ export type ParsedTransaction = {
   description: string;
   personName?: string;
   date?: string;
+  originalAmount?: number;
+  originalCurrency?: string;
 };
 
-export function parseNaturalLanguage(input: string): ParsedTransaction | null {
-  // Pre-process: Handle thousands separators (20.000 or 20,000 -> 20000)
-  const text = input.toLowerCase()
-    .replace(/(\d+)[.,](\d{3})(?!\d)/g, '$1$2')
-    .replace(/(\d+)[.,](\d{3})[.,](\d{3})(?!\d)/g, '$1$2$3');
-  // 1. Detect Amount
-  let amount = 0;
-  // Match currency patterns or standalone numbers
-  // Avoid matching dates like "15 de mayo" by being specific in the lookahead
-  const amountRegex = /(?<!a las |vence el |el |día )(\d+([.,]\d{3})*([.,]\d+)?)(?!\s?hs|am|pm|\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre))/i;
-  
-  const priceMatch = text.match(/\$\s?(\d+([.,]\d+)*([.,]\d+)?)/i) || 
-                     text.match(/(\d+([.,]\d+)*([.,]\d+)?)\s?(?:pesos|eur|usd|dolares)/i) ||
-                     text.match(amountRegex);
-
-  if (priceMatch) {
-    let rawAmount = priceMatch[1];
-    // If it has multiple dots/commas, it's likely thousands
-    // Example: 240.000 -> 240000
-    // Example: 1.200,50 -> 1200.50
-    if ((rawAmount.match(/[.,]/g) || []).length > 1 || (rawAmount.includes('.') && rawAmount.includes(','))) {
-      // Ar format: 1.200,50 or 1.200.000
-      rawAmount = rawAmount.replace(/\./g, '').replace(',', '.');
-    } else if (rawAmount.includes('.') && rawAmount.split('.')[1].length === 3) {
-      // Single dot followed by 3 digits: likely thousands (240.000)
-      rawAmount = rawAmount.replace('.', '');
-    } else if (rawAmount.includes(',') && rawAmount.split(',')[1].length === 3) {
-      // Single comma followed by 3 digits: likely thousands (240,000)
-      rawAmount = rawAmount.replace(',', '');
-    } else {
-      // Likely decimal
-      rawAmount = rawAmount.replace(',', '.');
+const DICTIONARY = {
+  es: {
+    income: ['ingrese', 'gano', 'recibi', 'cobre', 'me pagaron', 'me dieron', 'tengo', 'ingreso', 'entrada', 'entro', 'ingresaron', 'me entro', 'me ingresaron', 'sueldo', 'pago'],
+    expense: ['gaste', 'pague', 'gasto', 'compre', 'pago', 'merqué', 'salida', 'consumo'],
+    debt: ['deben', 'prest', 'deuda', 'debo', 'me debe', 'prestamo'],
+    reminder: ['recordar', 'aviso', 'avisame', 'acordar', 'haceme acordar', 'evento'],
+    categories: {
+      food: ['comida', 'carne', 'super', 'queso', 'pan', 'leche', 'verdura', 'fruta', 'almuerzo', 'cena', 'restaurante', 'factura', 'galle', 'bebida', 'mc donalds', 'burger'],
+      transport: ['nafta', 'combustible', 'uber', 'taxi', 'sube', 'bondi', 'colectivo', 'viaje', 'auto', 'mecanico', 'estacionamiento'],
+      services: ['luz', 'agua', 'gas', 'internet', 'fibertel', 'personal', 'movistar', 'claro', 'gym', 'gimnasio', 'expensas', 'seguro', 'alquiler'],
+      tech: ['celular', 'computadora', 'notebook', 'teclado', 'monitor', 'mouse', 'gadget', 'software', 'pc', 'iphone', 'android', 'tecnologia'],
+      clothing: ['ropa', 'zapatillas', 'jean', 'remera', 'camisa', 'campera', 'pantalon', 'abrigo', 'calzado', 'moda'],
+      entertainment: ['cine', 'salida', 'netflix', 'spotify', 'juego', 'gaming', 'steam', 'playstation', 'teatro', 'recital', 'concierto', 'ps4', 'ps5', 'xbox', 'disney', 'hbo'],
+      health: ['farmacia', 'remedio', 'medico', 'clinica', 'dentista', 'obra social', 'hospital'],
+      education: ['curso', 'universidad', 'escuela', 'colegio', 'libros', 'utiles'],
+      home: ['muebles', 'decoracion', 'ferreteria', 'pintura'],
+      salary: ['sueldo', 'cobro', 'aguinaldo', 'nomina'],
+      freelance: ['proyecto', 'cliente', 'web', 'freelance', 'trabajo']
     }
-    amount = parseFloat(rawAmount);
+  },
+  en: {
+    income: ['earned', 'received', 'got', 'income', 'salary', 'plus', 'deposit', 'bonus', 'paycheck'],
+    expense: ['spent', 'paid', 'bought', 'expense', 'purchase', 'bill', 'cost', 'payed'],
+    debt: ['owes', 'debt', 'borrowed', 'lend', 'owe me'],
+    reminder: ['remind', 'alert', 'notice', 'remember', 'event'],
+    categories: {
+      food: ['food', 'meat', 'grocery', 'cheese', 'bread', 'milk', 'veggies', 'fruit', 'lunch', 'dinner', 'restaurant', 'burger', 'mcdonalds', 'pizza', 'sushi'],
+      transport: ['gas', 'fuel', 'uber', 'taxi', 'bus', 'train', 'parking', 'trip', 'car', 'mechanic'],
+      services: ['electricity', 'water', 'internet', 'subscription', 'gym', 'rent', 'insurance', 'phone bill'],
+      tech: ['phone', 'computer', 'laptop', 'keyboard', 'monitor', 'mouse', 'gadget', 'software', 'pc', 'iphone', 'android', 'tech'],
+      clothing: ['clothing', 'clothes', 'shoes', 'sneakers', 'jeans', 'shirt', 't-shirt', 'jacket', 'pants', 'coat', 'fashion'],
+      entertainment: ['cinema', 'movie', 'netflix', 'spotify', 'game', 'gaming', 'steam', 'playstation', 'theatre', 'concert', 'xbox', 'disney', 'hbo'],
+      health: ['pharmacy', 'medicine', 'doctor', 'clinic', 'dentist', 'health insurance', 'hospital'],
+      education: ['course', 'university', 'school', 'college', 'books', 'supplies'],
+      home: ['furniture', 'decor', 'hardware', 'paint', 'homeware'],
+      salary: ['salary', 'wage', 'payday', 'payroll'],
+      freelance: ['project', 'client', 'web', 'freelance', 'work']
+    }
+  },
+  pt: {
+    income: ['ganhei', 'recebi', 'renda', 'entrada', 'salario', 'pagamento'],
+    expense: ['gastei', 'paguei', 'comprei', 'despesa', 'compra', 'custo'],
+    debt: ['deve', 'divida', 'emprestado', 'me deve'],
+    reminder: ['lembrar', 'aviso', 'avisar', 'lembrete'],
+    categories: {
+      food: ['comida', 'carne', 'super', 'queijo', 'pao', 'leite', 'verdura', 'fruta', 'almoco', 'jantar', 'restaurante', 'lanche'],
+      transport: ['gasolina', 'combustivel', 'uber', 'taxi', 'onibus', 'trem', 'estacionamento', 'viagem', 'carro', 'mecanico'],
+      services: ['luz', 'agua', 'gas', 'internet', 'academia', 'aluguel', 'seguro', 'celular'],
+      tech: ['celular', 'computador', 'notebook', 'teclado', 'monitor', 'mouse', 'software', 'pc', 'iphone', 'android', 'tecnologia'],
+      clothing: ['roupas', 'tenis', 'jeans', 'camiseta', 'camisa', 'jaqueta', 'calca', 'sapato', 'moda'],
+      entertainment: ['cinema', 'filme', 'netflix', 'spotify', 'jogo', 'gaming', 'steam', 'playstation', 'teatro', 'show', 'xbox', 'disney'],
+      health: ['farmacia', 'remedio', 'medico', 'clinica', 'dentista', 'plano de saude', 'hospital'],
+      education: ['curso', 'universidade', 'escola', 'colegio', 'livros'],
+      home: ['moveis', 'decoracao', 'ferramentas', 'pintura'],
+      salary: ['salario', 'pagamento', 'contracheque'],
+      freelance: ['projeto', 'cliente', 'web', 'freelance', 'trabalho']
+    }
+  },
+  it: {
+    income: ['guadagnato', 'ricevuto', 'entrata', 'reddito', 'stipendio', 'pagamento'],
+    expense: ['speso', 'pagato', 'comprato', 'spesa', 'acquisto', 'costo'],
+    debt: ['deve', 'debito', 'prestato', 'mi deve'],
+    reminder: ['ricordami', 'avviso', 'promemoria', 'ricordare'],
+    categories: {
+      food: ['cibo', 'carne', 'supermercato', 'formaggio', 'pane', 'latte', 'verdura', 'frutta', 'pranzo', 'cena', 'ristorante'],
+      transport: ['benzina', 'carburante', 'uber', 'taxi', 'autobus', 'treno', 'parcheggio', 'viaggio', 'auto', 'meccanico'],
+      services: ['luce', 'acqua', 'gas', 'internet', 'palestra', 'affitto', 'assicurazione', 'bolletta'],
+      tech: ['cellulare', 'computer', 'notebook', 'tastiera', 'monitore', 'mouse', 'software', 'pc', 'iphone', 'android'],
+      clothing: ['vestiti', 'scarpe', 'jeans', 'maglietta', 'camicia', 'giacca', 'pantaloni', 'moda'],
+      entertainment: ['cinema', 'film', 'netflix', 'spotify', 'gioco', 'gaming', 'steam', 'playstation', 'teatro', 'concerto'],
+      health: ['farmacia', 'medicina', 'medico', 'clinica', 'dentista', 'assicurazione sanitaria', 'ospedale'],
+      education: ['corso', 'universita', 'scuola', 'collegio', 'libri'],
+      home: ['mobili', 'decorazioni', 'ferramenta', 'vernice'],
+      salary: ['stipendio', 'paga', 'busta paga'],
+      freelance: ['progetto', 'cliente', 'web', 'freelance', 'lavoro']
+    }
+  },
+  fr: {
+    income: ['gagne', 'recu', 'revenu', 'entree', 'salaire', 'paiement'],
+    expense: ['depense', 'paye', 'achete', 'depense', 'achat', 'cout'],
+    debt: ['doit', 'dette', 'prete', 'me doit'],
+    reminder: ['rappel', 'rappeler', 'avertir', 'avis'],
+    categories: {
+      food: ['nourriture', 'viande', 'supermarche', 'fromage', 'pain', 'lait', 'legumes', 'fruits', 'dejeuner', 'diner', 'restaurant'],
+      transport: ['essence', 'carburant', 'uber', 'taxi', 'bus', 'train', 'parking', 'voyage', 'voiture', 'mecanicien'],
+      services: ['electricite', 'eau', 'internet', 'gym', 'loyer', 'assurance', 'facture'],
+      tech: ['telephone', 'ordinateur', 'ordinateur portable', 'clavier', 'moniteur', 'souris', 'logiciel', 'pc', 'iphone', 'android'],
+      clothing: ['vetements', 'chaussures', 'jeans', 't-shirt', 'chemise', 'veste', 'pantalon', 'mode'],
+      entertainment: ['cinema', 'film', 'netflix', 'spotify', 'jeu', 'gaming', 'steam', 'playstation', 'theatre', 'concert'],
+      health: ['pharmacie', 'medicament', 'medecin', 'clinique', 'dentiste', 'assurance maladie', 'hopital'],
+      education: ['cours', 'universite', 'ecole', 'college', 'livres'],
+      home: ['meubles', 'decoration', 'quincaillerie', 'peinture'],
+      salary: ['salaire', 'paie', 'bulletin de paie'],
+      freelance: ['projet', 'client', 'web', 'freelance', 'travail']
+    }
   }
+};
 
-  // 2. Detect Type (with better synonyms)
-  let type: 'income' | 'expense' | 'debt' | 'reminder' = 'expense';
+const CURRENCY_SYMBOLS = {
+  USD: ['usd', 'dolares', 'dollars', 'u$d', '$'],
+  EUR: ['eur', 'euros', '€'],
+  BRL: ['brl', 'reais', 'reales', 'r$'],
+  ARS: ['ars', 'pesos', 'arg']
+};
+
+export function parseNaturalLanguage(
+  input: string, 
+  lang: string = 'es', 
+  targetCurrency: string = 'ARS',
+  rates?: Record<string, number>
+): ParsedTransaction | null {
+  const text = input.toLowerCase();
+  const dict = DICTIONARY[lang as keyof typeof DICTIONARY] || DICTIONARY.es;
+
+  // 1. Detect Currency and Amount
+  let amount = 0;
+  let detectedCurrency = targetCurrency;
   
-  const incomeKeywords = ['ingrese', 'gano', 'recibi', 'cobre', 'me pagaron', 'me dieron', 'tengo', 'ingreso', 'entrada', 'entro', 'ingresaron', 'me entro', 'me ingresaron'];
-  const debtKeywords = ['deben', 'prest', 'deuda', 'debo', 'me debe'];
-  const reminderKeywords = ['recordar', 'aviso', 'avisame', 'acordar', 'haceme acordar'];
-  const expenseKeywords = ['gaste', 'pague', 'gasto', 'compre', 'pago', 'compre', 'merqué'];
+  // Regex to find numbers
+  const numRegex = /(\d+([.,]\d{3})*([.,]\d+)?)/;
+  const numMatch = text.match(numRegex);
+  
+  if (numMatch) {
+    let rawAmount = numMatch[1].replace(/\./g, '').replace(',', '.');
+    amount = parseFloat(rawAmount);
 
-  if (incomeKeywords.some(k => text.includes(k))) {
-    type = 'income';
-  } else if (debtKeywords.some(k => text.includes(k))) {
-    type = 'debt';
-  } else if (reminderKeywords.some(k => text.includes(k))) {
-    type = 'reminder';
-  } else if (expenseKeywords.some(k => text.includes(k))) {
-    type = 'expense';
+    // Detect if another currency was mentioned
+    for (const [currency, symbols] of Object.entries(CURRENCY_SYMBOLS)) {
+      if (symbols.some(s => text.includes(s))) {
+        detectedCurrency = currency;
+        break;
+      }
+    }
+
+    // ALWAYS convert to ARS for database storage
+    if (rates && detectedCurrency !== 'ARS') {
+      const rateToUSD = 1 / rates[detectedCurrency];
+      const usdAmount = amount * rateToUSD;
+      amount = usdAmount * rates['ARS'];
+    }
   }
+
+  // 2. Detect Type
+  let type: 'income' | 'expense' | 'debt' | 'reminder' = 'expense';
+  if (dict.income.some(k => text.includes(k))) type = 'income';
+  else if (dict.debt.some(k => text.includes(k))) type = 'debt';
+  else if (dict.reminder.some(k => text.includes(k))) type = 'reminder';
+  else if (dict.expense.some(k => text.includes(k))) type = 'expense';
 
   // 3. Detect Category
-  let category = type === 'income' ? 'other' : 'other';
-  
-  const keywordMap: Record<string, string[]> = {
-    tech: ['celular', 'computadora', 'notebook', 'teclado', 'monitor', 'mouse', 'gadget', 'software', 'ram', 'memoria', 'disco', 'ssd', 'cpu', 'procesador', 'placa de video', 'gpu', 'motherboard', 'placa base', 'hardware', 'tecnologia', 'tableta', 'ipad', 'laptop', 'pc', 'iphone', 'android'],
-    clothing: ['ropa', 'zapatillas', 'jean', 'remera', 'camisa', 'campera', 'indumentaria', 'local de ropa', 'pantalon', 'abrigo', 'calzado'],
-    food: ['comida', 'carne', 'super', 'coto', 'jumbo', 'carrefour', 'dia', 'chino', 'almuerzo', 'cena', 'restaurante', 'bebida', 'gaseosa', 'agua', 'galletitas', 'papas fritas', 'snack', 'papas', 'golosinas', 'mc donalds', 'burger', 'pan', 'leche', 'verdura'],
-    transport: ['nafta', 'combustible', 'uber', 'taxi', 'sube', 'bondi', 'colectivo', 'estacionamiento', 'viaje', 'auto', 'mecanico'],
-    services: ['luz', 'agua', 'gas', 'internet', 'fibertel', 'personal', 'movistar', 'claro', 'gym', 'gimnasio', 'expensas', 'seguro', 'patente', 'alquiler'],
-    health: ['farmacia', 'remedio', 'medico', 'clinica', 'dentista', 'obra social', 'hospital'],
-    home: ['muebles', 'decoracion', 'articulos de hogar', 'ferreteria', 'pintura'],
-    entertainment: ['cine', 'salida', 'netflix', 'spotify', 'juego', 'gaming', 'steam', 'playstation', 'teatro', 'recital', 'concierto', 'ps4', 'ps5', 'xbox', 'nintendo', 'disney+', 'hbo', 'star+', 'prime video', 'pelicula', 'show'],
-    education: ['curso', 'universidad', 'escuela', 'colegio', 'libros', 'utiles'],
-    salary: ['sueldo', 'cobro', 'pago quincena', 'nomina', 'aguinaldo'],
-    freelance: ['ludus', 'proyecto', 'cliente', 'web', 'freelance', 'trabajo']
-  };
-
-  for (const [catId, keywords] of Object.entries(keywordMap)) {
+  let category = 'other';
+  for (const [catId, keywords] of Object.entries(dict.categories)) {
     if (keywords.some(k => text.includes(k))) {
       category = catId;
       break;
     }
   }
 
-  // If no keyword matched, check original labels
-  if (category === 'other') {
-    const allCats = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
-    for (const cat of allCats) {
-      if (text.includes(cat.label.toLowerCase())) {
-        category = cat.id;
-        break;
-      }
-    }
-  }
-
-  // 4. Detect Person Name (for debts)
+  // 4. Person Name for Debts
   let personName = '';
   if (type === 'debt') {
-    const personMatch = text.match(/(?:de|a|me debe)\s+([a-zñáéíóú]+)(?:\s|$)/i);
+    const personMatch = text.match(/(?:de|a|me deve|owes|doit|doit à|mi deve)\s+([a-zñáéíóú]+)(?:\s|$)/i);
     if (personMatch) personName = personMatch[1].charAt(0).toUpperCase() + personMatch[1].slice(1);
-    else personName = 'Alguien';
+    else personName = lang === 'es' ? 'Alguien' : lang === 'en' ? 'Someone' : '...';
   }
 
   // 5. Build Description
-  let cleanDesc = input;
-  const stopWords = [...incomeKeywords, ...debtKeywords, ...reminderKeywords, ...expenseKeywords, 'un ', 'una ', 'el ', 'la ', 'en ', 'por '];
+  let foundDesc = input.replace(/\d+([.,]\d+)?/g, '').trim();
+  // Remove currency symbols/names from description
+  Object.values(CURRENCY_SYMBOLS).flat().forEach(s => {
+    foundDesc = foundDesc.replace(new RegExp(`\\b${s}\\b`, 'gi'), '');
+  });
   
-  // Try to find the description after the trigger word
-  let foundDesc = '';
-  const parts = input.split(/\s+/);
-  let triggerIndex = -1;
-  
-  for (let i = 0; i < parts.length; i++) {
-    if (stopWords.some(sw => parts[i].toLowerCase().includes(sw))) {
-      triggerIndex = i;
-      break;
-    }
-  }
-
-  if (triggerIndex !== -1) {
-    foundDesc = parts.slice(triggerIndex + 1).join(' ').replace(/\d+([.,]\d+)?/g, '').trim();
-  }
-
-  if (!foundDesc) {
-    foundDesc = input.replace(/\d+([.,]\d+)?/g, '').trim();
-  }
-
-  // Final cleanup: remove trailing/leading punctuation
   foundDesc = foundDesc.replace(/^[^\w\s]+|[^\w\s]+$/g, '').trim();
   foundDesc = foundDesc.charAt(0).toUpperCase() + foundDesc.slice(1);
 
@@ -138,8 +191,10 @@ export function parseNaturalLanguage(input: string): ParsedTransaction | null {
     type,
     amount,
     category,
-    description: foundDesc || (type === 'expense' ? 'Gasto rápido' : 'Registro rápido'),
+    description: foundDesc || (type === 'expense' ? 'Quick Expense' : 'Quick Register'),
     personName,
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    originalAmount: amount, // Keeping these for reference if needed
+    originalCurrency: detectedCurrency
   };
 }

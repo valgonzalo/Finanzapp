@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, Send, X, Bot, Check, AlertCircle } from 'lucide-react';
 import { parseNaturalLanguage, ParsedTransaction } from '@/lib/nlp';
 import { db } from '@/lib/db';
-import { formatCurrency } from '@/lib/utils';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/constants';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 type Message = {
   role: 'bot' | 'user';
@@ -18,6 +18,7 @@ type Message = {
 
 export default function ChatBot() {
   const { t, lang } = useTranslation();
+  const { formatCurrency, currencyId, rates } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -51,7 +52,7 @@ export default function ChatBot() {
     });
 
     // Parsing logic
-    const parsed = parseNaturalLanguage(userMessage);
+    const parsed = parseNaturalLanguage(userMessage, lang, currencyId, rates);
 
     if (parsed) {
       const categories = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
