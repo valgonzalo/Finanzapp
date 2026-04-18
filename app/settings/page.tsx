@@ -182,17 +182,52 @@ export default function SettingsPage() {
               <span className="text-[10px] font-bold px-2 py-1 rounded bg-surface-alt border border-border/50">AUTO</span>
             </div>
 
-            <div className="p-6 flex items-center justify-between group hover:bg-primary/5 transition-colors cursor-pointer opacity-60">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-text-muted/10 flex items-center justify-center text-text-muted">
-                  <ShieldCheck className="w-5 h-5" />
+            <div className="p-6 flex flex-col gap-4 group hover:bg-primary/5 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                    userSettings?.isSecurityEnabled ? "bg-primary/10 text-primary" : "bg-text-muted/10 text-text-muted"
+                  )}>
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-text-primary">{t.security.title}</h4>
+                    <p className="text-xs text-text-muted">{t.security.enable_pin}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-text-primary">{lang === 'es' ? 'Seguridad Biométrica' : 'Biometric Security'}</h4>
-                  <p className="text-xs text-text-muted">{lang === 'es' ? 'Proteger acceso con huella o rostro' : 'Protect access with fingerprint or face'}</p>
-                </div>
+                <button 
+                  onClick={() => handleUpdateSetting('isSecurityEnabled', userSettings?.isSecurityEnabled ? 0 : 1)}
+                  className={cn(
+                    "w-12 h-6 rounded-full p-1 transition-all duration-300",
+                    userSettings?.isSecurityEnabled ? "bg-primary" : "bg-surface-alt border border-border/50"
+                  )}
+                >
+                  <div className={cn(
+                    "w-4 h-4 bg-white rounded-full transition-transform duration-300 shadow-sm",
+                    userSettings?.isSecurityEnabled ? "translate-x-6" : "translate-x-0"
+                  )} />
+                </button>
               </div>
-              <ChevronRight className="w-5 h-5 text-text-muted" />
+
+              {userSettings?.isSecurityEnabled === 1 && (
+                <div className="pt-2 animate-in fade-in slide-in-from-top-2">
+                  <label className="text-[10px] font-bold text-text-muted uppercase ml-2">{t.security.setup_pin}</label>
+                  <input 
+                    type="password" 
+                    maxLength={4}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={userSettings?.pin || ''} 
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 4) handleUpdateSetting('pin', val);
+                    }}
+                    className="w-full bg-surface-alt border border-border/50 rounded-2xl p-4 text-text-primary focus:border-primary outline-none transition-all font-mono text-2xl tracking-[1em] text-center mt-2"
+                    placeholder="****"
+                  />
+                </div>
+              )}
             </div>
 
             <div 

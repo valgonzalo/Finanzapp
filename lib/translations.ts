@@ -42,6 +42,18 @@ export const translations = {
       confirm_btn: "Confirmar",
       cancel_btn: "Cancelar"
     },
+    security: {
+      title: "Seguridad",
+      enable_pin: "Habilitar PIN",
+      setup_pin: "Configurar PIN de 4 dígitos",
+      enter_pin: "Ingresá tu PIN",
+      incorrect_pin: "PIN incorrecto",
+      biometrics: "Usar huella / biometría",
+      biometrics_not_available: "Biometría no disponible",
+      forgot_pin: "¿Olvidaste tu PIN?",
+      forgot_pin_notice: "Por seguridad, si olvidaste tu PIN deberás resetear la app y perderás tus datos locales.",
+      unlock: "Desbloquear"
+    },
     common: {
       save: "Guardar",
       cancel: "Cancelar",
@@ -95,6 +107,18 @@ export const translations = {
       error: "Oops, there was an error while saving.",
       confirm_btn: "Confirm",
       cancel_btn: "Cancel"
+    },
+    security: {
+      title: "Security",
+      enable_pin: "Enable PIN",
+      setup_pin: "Setup 4-digit PIN",
+      enter_pin: "Enter your PIN",
+      incorrect_pin: "Incorrect PIN",
+      biometrics: "Use Fingerprint / Biometrics",
+      biometrics_not_available: "Biometrics not available",
+      forgot_pin: "Forgot your PIN?",
+      forgot_pin_notice: "For security, if you forgot your PIN you must reset the app and you will lose your local data.",
+      unlock: "Unlock"
     },
     common: {
       save: "Save",
@@ -150,6 +174,18 @@ export const translations = {
       confirm_btn: "Confirmar",
       cancel_btn: "Cancelar"
     },
+    security: {
+      title: "Segurança",
+      enable_pin: "Ativar PIN",
+      setup_pin: "Configurar PIN de 4 dígitos",
+      enter_pin: "Digite seu PIN",
+      incorrect_pin: "PIN incorreto",
+      biometrics: "Usar digital / biometria",
+      biometrics_not_available: "Biometria indisponível",
+      forgot_pin: "Esqueceu seu PIN?",
+      forgot_pin_notice: "Por segurança, se você esquecer seu PIN, deverá resetar o app e perderá seus datos locais.",
+      unlock: "Desbloquear"
+    },
     common: {
       save: "Salvar",
       cancel: "Cancelar",
@@ -204,6 +240,18 @@ export const translations = {
       confirm_btn: "Conferma",
       cancel_btn: "Annulla"
     },
+    security: {
+      title: "Sicurezza",
+      enable_pin: "Abilita PIN",
+      setup_pin: "Imposta PIN a 4 cifre",
+      enter_pin: "Inserisci il tuo PIN",
+      incorrect_pin: "PIN errato",
+      biometrics: "Usa impronta / biometria",
+      biometrics_not_available: "Biometria non disponibile",
+      forgot_pin: "Hai dimenticato il PIN?",
+      forgot_pin_notice: "Per sicurezza, se hai dimenticato il PIN dovrai resettare l'app e perderai i tuoi dati locali.",
+      unlock: "Sblocca"
+    },
     common: {
       save: "Salva",
       cancel: "Annulla",
@@ -257,6 +305,18 @@ export const translations = {
       error: "Oups, il y a eu une erreur lors de l'enregistrement.",
       confirm_btn: "Confirmer",
       cancel_btn: "Annuler"
+    },
+    security: {
+      title: "Sécurité",
+      enable_pin: "Activer le PIN",
+      setup_pin: "Configurer un PIN à 4 chiffres",
+      enter_pin: "Entrez votre PIN",
+      incorrect_pin: "PIN incorrect",
+      biometrics: "Utiliser l'empreinte / biométrie",
+      biometrics_not_available: "Biométrie non disponible",
+      forgot_pin: "PIN oublié ?",
+      forgot_pin_notice: "Par sécurité, si vous oubliez votre PIN, vous devrez réinitialiser l'app et perdrez vos données locales.",
+      unlock: "Débloquer"
     },
     common: {
       save: "Enregistrer",
