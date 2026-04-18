@@ -7,6 +7,7 @@ import { parseNaturalLanguage, ParsedTransaction } from '@/lib/nlp';
 import { db } from '@/lib/db';
 import { formatCurrency } from '@/lib/utils';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/constants';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Message = {
   role: 'bot' | 'user';
@@ -16,12 +17,18 @@ type Message = {
 };
 
 export default function ChatBot() {
+  const { t, lang } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', content: '¡Hola! Soy FinanzBot. Decime qué querés registrar, por ejemplo: "Gaste 500 en comida" o "Me deben 1000 de Carlos".' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize greeting on open or language change
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{ role: 'bot', content: t.chatbot.greeting }]);
+    }
+  }, [t.chatbot.greeting, messages.length]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -51,16 +58,22 @@ export default function ChatBot() {
       const categoryLabel = categories.find(c => c.id === parsed.category)?.label || parsed.category;
       
       let responseText = '';
-      const amountText = parsed.amount > 0 ? ` de ${formatCurrency(parsed.amount)}` : '';
+      const formattedAmount = formatCurrency(parsed.amount);
 
       if (parsed.type === 'expense') {
-        responseText = `Entendido, un gasto${amountText} en ${categoryLabel}. ¿Lo guardo?`;
+        responseText = t.chatbot.confirm_expense
+          .replace('{amount}', formattedAmount)
+          .replace('{category}', categoryLabel);
       } else if (parsed.type === 'income') {
-        responseText = `Genial, un ingreso${amountText}. ¿Confirmás el registro?`;
+        responseText = t.chatbot.confirm_income.replace('{amount}', formattedAmount);
       } else if (parsed.type === 'debt') {
-        responseText = `Ok, registro que ${parsed.personName} te debe${amountText}. ¿Es correcto?`;
-      } else {
-        responseText = `Recordatorio agendado: "${parsed.description}"${amountText}. ¿Está bien?`;
+        responseText = t.chatbot.confirm_debt
+          .replace('{person}', parsed.personName || '...')
+          .replace('{amount}', formattedAmount);
+      } else if (parsed.type === 'reminder') {
+        responseText = t.chatbot.confirm_reminder
+          .replace('{description}', parsed.description)
+          .replace('{amount}', formattedAmount);
       }
 
       setMessages(prev => [...prev, { 
@@ -72,7 +85,7 @@ export default function ChatBot() {
     } else {
       setMessages(prev => [...prev, { 
         role: 'bot', 
-        content: 'No pude entender bien ese pedido. Probá algo como "Gaste 1500 en transporte".' 
+        content: t.chatbot.unknown 
       }]);
     }
   };
@@ -115,13 +128,13 @@ export default function ChatBot() {
 
       setMessages(prev => {
         const newMessages = [...prev];
-        newMessages[messageIndex] = { ...newMessages[messageIndex], content: '¡Listorti! Ya lo registré.', status: 'success' };
+        newMessages[messageIndex] = { ...newMessages[messageIndex], content: t.chatbot.success, status: 'success' };
         return newMessages;
       });
     } catch (error) {
       setMessages(prev => {
         const newMessages = [...prev];
-        newMessages[messageIndex] = { ...newMessages[messageIndex], content: 'Ups, hubo un error al guardar.', status: 'error' };
+        newMessages[messageIndex] = { ...newMessages[messageIndex], content: t.chatbot.error, status: 'error' };
         return newMessages;
       });
     }
@@ -132,7 +145,7 @@ export default function ChatBot() {
       const newMessages = [...prev];
       newMessages[messageIndex] = { 
         ...newMessages[messageIndex], 
-        content: 'Cancelado. No te preocupes, no guardé nada.', 
+        content: t.chatbot.cancelled, 
         status: 'cancelled' 
       };
       return newMessages;
@@ -190,13 +203,13 @@ export default function ChatBot() {
                           onClick={() => confirmAction(msg.data!, i)}
                           className="flex-1 bg-primary/20 text-primary border border-primary/30 py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 hover:bg-primary/30 transition-colors"
                         >
-                          <Check className="w-3 h-3" /> Confirmar
+                          <Check className="w-3 h-3" /> {t.chatbot.confirm_btn}
                         </button>
                         <button 
                           onClick={() => cancelAction(i)}
                           className="px-3 bg-surface border border-border py-1.5 rounded-xl text-xs font-medium text-text-muted hover:text-error hover:border-error/30 transition-colors"
                         >
-                          Cancelar
+                          {t.chatbot.cancel_btn}
                         </button>
                       </div>
                     )}
@@ -204,7 +217,7 @@ export default function ChatBot() {
                     {(msg.status === 'success' || msg.status === 'cancelled') && (
                       <div className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${msg.status === 'success' ? 'text-primary' : 'text-text-muted italic'}`}>
                         {msg.status === 'success' ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-                        {msg.status === 'success' ? 'Guardado exitosamente' : 'Acción cancelada'}
+                        {msg.content}
                       </div>
                     )}
                   </div>
@@ -220,7 +233,7 @@ export default function ChatBot() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribí acá..."
+                  placeholder={t.chatbot.placeholder}
                   className="w-full bg-background border border-border rounded-2xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-colors pr-12"
                 />
                 <button 

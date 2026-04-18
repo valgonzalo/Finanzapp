@@ -23,9 +23,9 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-border pb-safe pt-2 px-4 z-50 md:top-0 md:bottom-0 md:right-auto md:w-24 lg:w-28 md:border-t-0 md:border-r md:flex md:flex-col md:pt-10 md:pb-10 md:px-0">
-      <div className="flex justify-around items-center md:flex-col md:gap-10 h-full">
-        <div className="flex justify-around items-center w-full md:flex-col md:gap-8">
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-border pb-safe pt-2 px-2 z-50 md:top-0 md:bottom-0 md:right-auto md:w-20 lg:w-24 xl:w-28 md:border-t-0 md:border-r md:flex md:flex-col md:pt-10 md:pb-10 md:px-0">
+      <div className="flex justify-around items-center md:flex-col md:gap-10 h-full max-w-[500px] mx-auto md:max-w-none">
+        <div className="flex justify-around md:justify-start items-center w-full md:flex-col md:gap-8">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -34,18 +34,19 @@ export default function Navigation() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center w-full gap-1.5 transition-all duration-300 relative group",
+                  "flex flex-col items-center justify-center min-w-[60px] md:w-full gap-1 transition-all duration-300 relative group px-1",
                   isActive ? "text-primary" : "text-text-muted hover:text-text-secondary"
                 )}
               >
                 <div className={cn(
-                  "p-2 rounded-2xl transition-all duration-300",
+                  "p-2 md:p-2.5 rounded-2xl transition-all duration-300",
                   isActive ? "bg-primary/10 shadow-[0_0_15px_rgba(0,255,136,0.2)]" : "group-hover:bg-surface-alt"
                 )}>
-                  <Icon className="w-6 h-6 md:w-7 md:h-7" strokeWidth={isActive ? 2.5 : 2} />
+                  <Icon className="w-5 h-5 xs:w-6 xs:h-6 md:w-7 md:h-7" strokeWidth={isActive ? 2.5 : 2} />
                 </div>
                 <span className={cn(
-                  "text-[10px] md:text-[11px] font-semibold tracking-wide uppercase transition-all",
+                  "text-[9px] xs:text-[10px] md:text-[11px] font-semibold tracking-wide uppercase transition-all text-center leading-tight",
+                  "whitespace-nowrap md:whitespace-normal overflow-hidden md:overflow-visible text-ellipsis md:text-clip max-w-[65px] md:max-w-none",
                   isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
                 )}>
                   {item.label}
@@ -65,19 +66,20 @@ export default function Navigation() {
           <Link
             href="/settings"
             className={cn(
-              "flex flex-col items-center justify-center w-full gap-1.5 transition-all duration-300 relative group",
+              "flex flex-col items-center justify-center min-w-[60px] md:w-full gap-1 transition-all duration-300 relative group px-1",
               pathname === '/settings' ? "text-primary" : "text-text-muted hover:text-text-secondary"
             )}
           >
             <div className={cn(
-              "p-2 rounded-2xl transition-all duration-300",
+              "p-2 md:p-2.5 rounded-2xl transition-all duration-300",
               pathname === '/settings' ? "bg-primary/10 shadow-[0_0_15px_rgba(0,255,136,0.2)]" : "group-hover:bg-surface-alt"
             )}>
-              <Settings className="w-6 h-6 md:w-7 md:h-7" />
+              <Settings className="w-5 h-5 xs:w-6 xs:h-6 md:w-7 md:h-7" />
             </div>
             <span className={cn(
-              "text-[10px] md:text-[11px] font-semibold tracking-wide uppercase transition-all",
-              pathname === '/settings' ? "opacity-100" : "opacity-100" // Always visible for settings to differ from main sections
+              "text-[9px] xs:text-[10px] md:text-[11px] font-semibold tracking-wide uppercase transition-all text-center leading-tight",
+              "whitespace-nowrap md:whitespace-normal overflow-hidden md:overflow-visible text-ellipsis md:text-clip max-w-[65px] md:max-w-none",
+              pathname === '/settings' ? "opacity-100" : "opacity-100"
             )}>
               {t.dashboard.settings}
             </span>

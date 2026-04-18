@@ -182,7 +182,7 @@ export default function Dashboard() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="p-4 md:p-8 lg:p-12 space-y-8"
+      className="p-4 md:p-8 lg:p-12 space-y-8 max-w-7xl mx-auto"
     >
       <motion.header variants={itemVariants} className="flex justify-between items-center pt-4 z-10 pb-4">
         <div className="flex items-center gap-6 justify-between w-full">

@@ -158,7 +158,7 @@ function TransactionsScreen() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 lg:p-12 space-y-8 pb-32">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 lg:p-12 space-y-8 pb-32 max-w-7xl mx-auto">
       <header className="pt-4 space-y-6 max-w-4xl mx-auto">
         <div className="flex justify-between items-center bg-surface-alt rounded-full p-1.5 border border-border/50 shadow-sm">
           <button onClick={handlePrevMonth} className="p-2 md:p-3 text-text-muted hover:text-text-primary transition-colors">

@@ -28,6 +28,20 @@ export const translations = {
       currency: "Moneda",
       language: "Idioma"
     },
+    chatbot: {
+      greeting: "¡Hola! Soy FinanzBot. Decime qué querés registrar, por ejemplo: 'Gaste 500 en comida' o 'Me deben 1000 de Carlos'.",
+      placeholder: "Escribí acá...",
+      unknown: "No pude entender bien ese pedido. Probá algo como 'Gaste 1500 en transporte'.",
+      confirm_expense: "Entendido, un gasto de {amount} en {category}. ¿Lo guardo?",
+      confirm_income: "Genial, un ingreso de {amount}. ¿Confirmás el registro?",
+      confirm_debt: "Ok, registro que {person} te debe {amount}. ¿Es correcto?",
+      confirm_reminder: "Recordatorio agendado: '{description}' de {amount}. ¿Está bien?",
+      success: "¡Listorti! Ya lo registré.",
+      cancelled: "Cancelado. No te preocupes, no guardé nada.",
+      error: "Ups, hubo un error al guardar.",
+      confirm_btn: "Confirmar",
+      cancel_btn: "Cancelar"
+    },
     common: {
       save: "Guardar",
       cancel: "Cancelar",
@@ -67,6 +81,20 @@ export const translations = {
       preferences: "Preferences",
       currency: "Currency",
       language: "Language"
+    },
+    chatbot: {
+      greeting: "Hi! I'm FinanzBot. Tell me what you want to register, for example: 'Spent 500 on food' or 'Carlos owes me 1000'.",
+      placeholder: "Type here...",
+      unknown: "I couldn't quite understand that. Try something like 'Spent 1500 on transport'.",
+      confirm_expense: "Understood, an expense of {amount} in {category}. Should I save it?",
+      confirm_income: "Great, an income of {amount}. Confirm registration?",
+      confirm_debt: "Ok, I'm registering that {person} owes you {amount}. Is that correct?",
+      confirm_reminder: "Reminder scheduled: '{description}' for {amount}. Is that okay?",
+      success: "Done! I've registered it.",
+      cancelled: "Cancelled. Don't worry, I didn't save anything.",
+      error: "Oops, there was an error while saving.",
+      confirm_btn: "Confirm",
+      cancel_btn: "Cancel"
     },
     common: {
       save: "Save",
@@ -108,6 +136,20 @@ export const translations = {
       currency: "Moeda",
       language: "Idioma"
     },
+    chatbot: {
+      greeting: "Olá! Eu sou o FinanzBot. Diga-me o que você quer registrar, por exemplo: 'Gastei 500 em comida' ou 'O Carlos me deve 1000'.",
+      placeholder: "Escreva aqui...",
+      unknown: "Não consegui entender bem esse pedido. Tente algo como 'Gastei 1500 em transporte'.",
+      confirm_expense: "Entendido, uma despesa de {amount} em {category}. Posso salvar?",
+      confirm_income: "Legal, uma receita de {amount}. Confirma o registro?",
+      confirm_debt: "Ok, registrei que o {person} te deve {amount}. Está correto?",
+      confirm_reminder: "Lembrete agendado: '{description}' de {amount}. Está bem?",
+      success: "Pronto! Já registrei.",
+      cancelled: "Cancelado. Não se preocupe, não salvei nada.",
+      error: "Ops, houve um erro ao salvar.",
+      confirm_btn: "Confirmar",
+      cancel_btn: "Cancelar"
+    },
     common: {
       save: "Salvar",
       cancel: "Cancelar",
@@ -148,6 +190,20 @@ export const translations = {
       currency: "Valuta",
       language: "Lingua"
     },
+    chatbot: {
+      greeting: "Ciao! Sono FinanzBot. Dimmi cosa vuoi registrare, ad esempio: 'Ho speso 500 per il cibo' o 'Carlos mi deve 1000'.",
+      placeholder: "Scrivi qui...",
+      unknown: "Non ho capito bene. Prova qualcosa come 'Speso 1500 per il trasporto'.",
+      confirm_expense: "Ricevuto, una spesa di {amount} in {category}. Lo salvo?",
+      confirm_income: "Ottimo, un'entrata di {amount}. Confermi la registrazione?",
+      confirm_debt: "Ok, registro che {person} ti deve {amount}. È corretto?",
+      confirm_reminder: "Promemoria programmato: '{description}' per {amount}. Va bene?",
+      success: "Fatto! L'ho registrato.",
+      cancelled: "Annullato. Non preoccuparti, non ho salvato nulla.",
+      error: "Ops, c'è stato un errore durante il salvataggio.",
+      confirm_btn: "Conferma",
+      cancel_btn: "Annulla"
+    },
     common: {
       save: "Salva",
       cancel: "Annulla",
@@ -187,6 +243,20 @@ export const translations = {
       preferences: "Préférences",
       currency: "Devise",
       language: "Langue"
+    },
+    chatbot: {
+      greeting: "Bonjour! Je suis FinanzBot. Dites-moi ce que vous voulez enregistrer, par exemple: 'J'ai dépensé 500 en nourriture' ou 'Carlos me doit 1000'.",
+      placeholder: "Écrivez ici...",
+      unknown: "Je n'ai pas pu bien comprendre cette demande. Essayez quelque chose como 'Dépense 1500 en transport'.",
+      confirm_expense: "Entendu, une dépense de {amount} en {category}. Dois-je l'enregistrer?",
+      confirm_income: "Génial, un revenu de {amount}. Confirmez-vous l'enregistrement?",
+      confirm_debt: "Ok, j'enregistre que {person} vous doit {amount}. Est-ce correct?",
+      confirm_reminder: "Rappel programmé: '{description}' de {amount}. Est-ce bon?",
+      success: "C'est fait! Je l'ai enregistré.",
+      cancelled: "Annulé. Ne vous inquiétez pas, je n'ai rien enregistré.",
+      error: "Oups, il y a eu une erreur lors de l'enregistrement.",
+      confirm_btn: "Confirmer",
+      cancel_btn: "Annuler"
     },
     common: {
       save: "Enregistrer",
