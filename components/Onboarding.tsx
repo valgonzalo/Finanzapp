@@ -32,6 +32,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         currency: selectedCurrency,
         language: selectedLanguage,
         isSecurityEnabled: 1,
+        isNotificationsEnabled: 1,
         pin: pin,
         onboardingCompleted: 1
       });

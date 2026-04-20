@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Lock, Fingerprint, Delete, ArrowRight, ShieldCheck, X } from 'lucide-react';
 
 export default function SecurityGate({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const settings = useLiveQuery(() => db.settings.toArray());
   const userSettings = settings?.[0];
   

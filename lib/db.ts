@@ -141,7 +141,14 @@ export class FinanzAppDB extends Dexie {
       savingsGoals: '++id, is_completed',
       savingsContributions: '++id, goal_id'
     });
-    this.version(9).stores({
+    this.version(10).stores({
+      transactions: '++id, type, date, category',
+      debts: '++id, status, due_date',
+      debt_installments: '++id, debt_id',
+      reminders: '++id, date, is_active, type',
+      recurringTransactions: '++id, type, recurrence, is_active, next_execution',
+      savingsGoals: '++id, is_completed',
+      savingsContributions: '++id, goal_id, date',
       settings: '++id'
     });
   }

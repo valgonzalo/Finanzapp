@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
-import { AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import PinScreen from './PinScreen';
 import { processRecurringTransactions } from '@/app/utils/recurringTransactions';
 import Toast from './Toast';
@@ -57,7 +57,25 @@ export default function AuthManager({ children }: { children: React.ReactNode })
       )}
       {/* Si estamos en loading, mostramos nada o un splash */}
       {authState === 'loading' && (
-        <div className="fixed inset-0 bg-[#0A0A0A] z-[10000]" />
+        <div className="fixed inset-0 bg-[#0A0A0A] z-[10000] flex flex-col items-center justify-center gap-6">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-primary/20 rounded-full" />
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <h2 className="text-primary font-display font-bold text-xl tracking-widest uppercase">FinanzApp</h2>
+            <div className="flex gap-1">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                  className="w-1.5 h-1.5 bg-primary rounded-full"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

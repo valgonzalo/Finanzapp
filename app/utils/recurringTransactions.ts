@@ -7,8 +7,10 @@ export const processRecurringTransactions = async (): Promise<number> => {
   const today = new Date().toISOString().split('T')[0];
   
   // Buscar recurrentes activos cuya próxima ejecución sea hoy o antes
+  // Usamos el índice de is_active para filtrar rápidamente
   const pending = await db.recurringTransactions
-    .filter(r => r.is_active === 1 && (!r.next_execution || r.next_execution <= today))
+    .where('is_active').equals(1)
+    .filter(r => !r.next_execution || r.next_execution <= today)
     .toArray();
 
   if (pending.length === 0) return 0;

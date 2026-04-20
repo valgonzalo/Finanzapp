@@ -50,14 +50,16 @@ export default function Dashboard() {
     db.transactions.toArray()
   ) || EMPTY_ARRAY;
 
-  const currentMonthTransactions = transactions.filter((t: any) => {
-    const d = new Date(t.date);
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-  });
+  const currentMonthTransactions = useMemo(() => {
+    return transactions.filter((t: any) => {
+      const d = new Date(t.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+  }, [transactions, currentMonth, currentYear]);
 
   const income = useMemo(() => currentMonthTransactions.filter((t: any) => t.type === 'income').reduce((acc: number, t: any) => acc + t.amount, 0), [currentMonthTransactions]);
   const expense = useMemo(() => currentMonthTransactions.filter((t: any) => t.type === 'expense').reduce((acc: number, t: any) => acc + t.amount, 0), [currentMonthTransactions]);
-  const balance = income - expense;
+  const balance = useMemo(() => income - expense, [income, expense]);
 
   const chartData = useMemo(() => {
     const expensesByCategory = currentMonthTransactions
