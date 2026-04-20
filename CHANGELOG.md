@@ -2,13 +2,13 @@
 
 Historial de cambios y evolución del sistema.
 
-## [2.2.0] - 2026-04-18
-### 🔒 Seguridad Biométrica y Privacidad Reforzada
-- **Gateway de Seguridad**: Implementación de un `SecurityGate` avanzado. Antes la app era de acceso libre tras el onboarding; ahora cuenta con un bloqueo por PIN obligatorio si el usuario lo desea.
-- **PIN & WebAuthn**: Añadido soporte para PIN de 4 dígitos y esqueleto de autenticación biométrica (Fingerprint) para navegadores compatibles.
-- **Recuperación Anti-Intrusos**: Nuevo sistema de "wipe" local en caso de olvido de PIN, garantizando que nadie pueda acceder físicamente a los datos sin el código.
+## [2.3.0] - 2026-04-18
+### 🛡️ Seguridad Obligatoria y Bloqueo de Sesión
+- **Onboarding Seguro**: El proceso de bienvenida ahora exige la creación de un PIN de 4 dígitos. Antes era opcional en ajustes; ahora es el estándar de seguridad.
+- **Auto-Bloqueo de Sesión**: Implementación de restauración automática de sesión con bloqueo inmediato. Cada vez que abras o recargues la app, el sistema pedirá tu PIN antes de revelar cualquier información.
+- **Teclado Numérico en Onboarding**: Integrado un numpad táctil en el flujo inicial para una configuración de seguridad fluida.
 
-## [2.1.0] - 2026-04-18
+## [2.2.0] - 2026-04-18
 ### ✨ Inteligencia Artificial y Glotización Natural
 - **Bot Políglota**: Evolución del ChatBot de español-único a un motor NLP en 5 idiomas (EN, ES, PT, IT, FR).
 - **Auto-Conversión en Chat**: Antes el bot solo registraba montos nominales; ahora detecta si hablas en dólares, euros o reales y los convierte en tiempo real al balance base de tu app.

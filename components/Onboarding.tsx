@@ -3,16 +3,17 @@
 import { useState } from 'react';
 import { db } from '@/lib/db';
 import { motion, AnimatePresence } from 'motion/react';
-import { Wallet, ArrowRight, ArrowLeft, Check, Globe, Coins, User, ShieldCheck } from 'lucide-react';
+import { Wallet, ArrowRight, ArrowLeft, Check, Globe, Coins, User, ShieldCheck, Lock, Delete } from 'lucide-react';
 import { CURRENCIES, LANGUAGES } from '@/lib/constants';
 
-type OnboardingStep = 'welcome' | 'name' | 'currency' | 'language' | 'ready';
+type OnboardingStep = 'welcome' | 'name' | 'currency' | 'language' | 'security' | 'ready';
 
 export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [name, setName] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0].id);
   const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].id);
+  const [pin, setPin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFinish = async () => {
@@ -22,6 +23,8 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         userName: name.trim() || 'Usuario',
         currency: selectedCurrency,
         language: selectedLanguage,
+        isSecurityEnabled: 1,
+        pin: pin,
         onboardingCompleted: 1
       });
       onComplete();
@@ -36,14 +39,16 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
     if (step === 'welcome') setStep('name');
     else if (step === 'name') setStep('currency');
     else if (step === 'currency') setStep('language');
-    else if (step === 'language') setStep('ready');
+    else if (step === 'language') setStep('security');
+    else if (step === 'security') setStep('ready');
   };
 
   const prevStep = () => {
     if (step === 'name') setStep('welcome');
     else if (step === 'currency') setStep('name');
     else if (step === 'language') setStep('currency');
-    else if (step === 'ready') setStep('language');
+    else if (step === 'security') setStep('language');
+    else if (step === 'ready') setStep('security');
   };
 
   const stepVariants = {
@@ -239,6 +244,76 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             </motion.div>
           )}
 
+          {step === 'security' && (
+            <motion.div 
+              key="security"
+              variants={stepVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="space-y-8 flex flex-col items-center"
+            >
+              <div className="space-y-3 text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                  <Lock className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="text-3xl font-display font-bold text-text-primary">Acceso Seguro</h2>
+                <p className="text-text-secondary">Crea un PIN de 4 dígitos para proteger tu privacidad.</p>
+              </div>
+
+              {/* PIN Display */}
+              <div className="flex gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                      pin.length >= i ? 'bg-primary border-primary shadow-[0_0_10px_rgba(0,255,136,0.3)]' : 'border-border'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Numpad */}
+              <div className="grid grid-cols-3 gap-4 w-full max-w-[240px]">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => pin.length < 4 && setPin(pin + n)}
+                    className="w-14 h-14 rounded-full bg-surface-alt font-bold text-lg hover:bg-primary/10 hover:text-primary transition-all"
+                  >
+                    {n}
+                  </button>
+                ))}
+                <div />
+                <button
+                  onClick={() => pin.length < 4 && setPin(pin + '0')}
+                  className="w-14 h-14 rounded-full bg-surface-alt font-bold text-lg hover:bg-primary/10 hover:text-primary transition-all"
+                >
+                  0
+                </button>
+                <button
+                  onClick={() => setPin(pin.slice(0, -1))}
+                  className="w-14 h-14 rounded-full flex items-center justify-center text-text-muted hover:text-error transition-all"
+                >
+                  <Delete className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex gap-4 w-full">
+                <button onClick={prevStep} className="p-5 rounded-2xl border border-border/50 text-text-muted hover:bg-surface-alt transition-all">
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <button 
+                  disabled={pin.length < 4}
+                  onClick={nextStep} 
+                  className="flex-1 bg-primary text-text-inverse font-bold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  Confirmar PIN <ArrowRight className="w-6 h-6" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {step === 'ready' && (
             <motion.div 
               key="ready"
@@ -286,7 +361,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         {/* Progress dots */}
         {step !== 'welcome' && step !== 'ready' && (
           <div className="mt-8 flex justify-center gap-2">
-            {(['name', 'currency', 'language'] as const).map((s) => (
+            {(['name', 'currency', 'language', 'security'] as const).map((s) => (
               <div 
                 key={s} 
                 className={`w-2 h-2 rounded-full transition-all duration-500 ${step === s ? 'w-8 bg-primary' : 'bg-border'}`} 
