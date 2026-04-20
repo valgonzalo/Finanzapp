@@ -11,6 +11,7 @@ import Link from 'next/link';
 
 import { motion, AnimatePresence } from 'motion/react';
 import { CurrencyInput } from '@/components/CurrencyInput';
+import Toast from '@/app/components/Toast';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -60,18 +61,21 @@ function DebtsScreen() {
 
   const displayedDebts = activeTab === 'pending' ? pendingDebts : paidDebts;
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const handleSaveDebt = async () => {
     if (!personName || !totalAmount) return;
 
-    const parsedTotalAmount = parseFloat(totalAmount.replace(/\./g, ''));
-    const parsedInstallmentAmount = installmentAmount ? parseFloat(installmentAmount.replace(/\./g, '')) : 0;
+    // Robust parsing: remove all non-digits
+    const parsedTotalAmount = parseInt(totalAmount.replace(/\D/g, ''), 10);
+    const parsedInstallmentAmount = installmentAmount ? parseInt(installmentAmount.replace(/\D/g, ''), 10) : 0;
 
     const debtId = await db.debts.add({
       person_name: personName,
       total_amount: parsedTotalAmount,
       paid_amount: 0,
       has_installments: hasInstallments ? 1 : 0,
-      installments_count: hasInstallments ? parseInt(installmentsCount) : undefined,
+      installments_count: hasInstallments ? parseInt(installmentsCount, 10) : undefined,
       installment_amount: hasInstallments ? parsedInstallmentAmount : undefined,
       due_date: dueDate || undefined,
       notes,
@@ -80,11 +84,11 @@ function DebtsScreen() {
     });
 
     if (hasInstallments && installmentsCount && parsedInstallmentAmount) {
-      const count = parseInt(installmentsCount);
+      const count = parseInt(installmentsCount, 10);
       const installments = [];
       for (let i = 1; i <= count; i++) {
         installments.push({
-          debt_id: debtId,
+          debt_id: debtId as number,
           installment_number: i,
           amount: parsedInstallmentAmount,
           paid: 0
@@ -93,6 +97,7 @@ function DebtsScreen() {
       await db.debt_installments.bulkAdd(installments);
     }
 
+    setToastMessage(lang === 'es' ? 'Deuda registrada con éxito' : 'Debt registered successfully');
     setIsAddModalOpen(false);
     setPersonName('');
     setTotalAmount('');
@@ -258,17 +263,17 @@ function DebtsScreen() {
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-surface-alt rounded-xl border border-border/50">
+          <div 
+            onClick={() => setHasInstallments(!hasInstallments)}
+            className="flex items-center justify-between p-4 bg-surface-alt rounded-xl border border-border/50 cursor-pointer hover:bg-surface transition-colors"
+          >
             <div>
               <span className="text-sm font-semibold text-text-primary block">¿Tiene cuotas?</span>
               <span className="text-xs text-text-muted mt-0.5 block">Dividir el pago en partes</span>
             </div>
-            <button 
-              onClick={() => setHasInstallments(!hasInstallments)}
-              className={`w-12 h-6 rounded-full p-1 transition-colors ${hasInstallments ? 'bg-primary' : 'bg-border'}`}
-            >
+            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${hasInstallments ? 'bg-primary' : 'bg-border'}`}>
               <div className={`w-4 h-4 rounded-full bg-white transition-transform ${hasInstallments ? 'translate-x-6' : 'translate-x-0'}`} />
-            </button>
+            </div>
           </div>
 
           {hasInstallments && (
@@ -331,6 +336,10 @@ function DebtsScreen() {
           </motion.button>
         </div>
       </BottomSheet>
+      <Toast 
+        message={toastMessage} 
+        onClear={() => setToastMessage(null)} 
+      />
     </motion.div>
   );
 }

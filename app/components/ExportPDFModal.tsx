@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, Download, Calendar } from 'lucide-react';
 import { generateMonthlyPDF } from '@/app/utils/generatePDF';
 

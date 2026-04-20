@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Plus, PiggyBank, Target, ArrowRight } from 'lucide-react';
 import SavingsGoalCard from '@/app/components/SavingsGoalCard';
 import AddGoalModal from '@/app/components/AddGoalModal';

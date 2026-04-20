@@ -113,17 +113,7 @@ export default function SecurityGate({ children }: { children: React.ReactNode }
               {num}
             </motion.button>
           ))}
-          <div className="w-16 h-16 flex items-center justify-center">
-            {biometricsAvailable && (
-              <motion.button 
-                whileTap={{ scale: 0.9 }}
-                onClick={handleBiometrics}
-                className="text-primary"
-              >
-                <Fingerprint className="w-8 h-8" />
-              </motion.button>
-            )}
-          </div>
+          <div className="w-16 h-16" /> {/* Empty space */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => handlePinInput('0')}
@@ -138,6 +128,26 @@ export default function SecurityGate({ children }: { children: React.ReactNode }
           >
             <Delete className="w-6 h-6" />
           </motion.button>
+        </div>
+
+        {/* Biometrics - Universal Position */}
+        <div className="mt-12 mb-8">
+          {biometricsAvailable && (
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={handleBiometrics}
+              className="flex flex-col items-center gap-4 group"
+            >
+              <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-all shadow-[0_0_30px_rgba(0,255,136,0.1)]">
+                <Fingerprint className="w-10 h-10" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60 group-hover:text-primary transition-colors">
+                {lang === 'es' ? 'Tocar para escanear' : 'Tap to scan'}
+              </span>
+            </motion.button>
+          )}
         </div>
 
         {/* Forgot PIN */}

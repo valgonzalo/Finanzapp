@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Target, DollarSign, Type, Calendar } from 'lucide-react';
 import { db } from '@/lib/db';
 import { cn } from '@/lib/utils';
@@ -124,7 +124,7 @@ export default function AddGoalModal({ isOpen, onClose }: AddGoalModalProps) {
                       onClick={() => setEmoji(e)}
                       className={cn(
                         "text-2xl p-3 rounded-2xl border transition-all",
-                        emoji === e ? "bg-white/10 border-white/20 scale-110" : "bg-transparent border-transparent hover:bg-white/5"
+                        emoji === e ? "bg-primary/20 border-primary/50 scale-110 shadow-[0_0_15px_rgba(0,255,136,0.2)]" : "bg-white/5 border-transparent hover:bg-white/10"
                       )}
                     >
                       {e}
@@ -162,7 +162,7 @@ export default function AddGoalModal({ isOpen, onClose }: AddGoalModalProps) {
                       onClick={() => setColor(c.value)}
                       className={cn(
                         "w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center",
-                        color === c.value ? "border-white" : "border-transparent"
+                        color === c.value ? "border-white scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
                       )}
                       style={{ backgroundColor: c.value }}
                     >

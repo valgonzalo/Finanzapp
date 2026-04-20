@@ -19,7 +19,7 @@ export default function Navigation() {
     { href: '/', icon: Home, label: lang === 'en' ? 'Dashboard' : lang === 'pt' ? 'Painel' : lang === 'it' ? 'Dashboard' : lang === 'fr' ? 'Tableau' : 'Dashboard' },
     { href: '/transactions', icon: ArrowLeftRight, label: lang === 'en' ? 'Transactions' : lang === 'pt' ? 'Transações' : lang === 'it' ? 'Transazioni' : lang === 'fr' ? 'Transactions' : 'Transacciones' },
     { href: '/debts', icon: Users, label: lang === 'en' ? 'Debts' : lang === 'pt' ? 'Dívidas' : lang === 'it' ? 'Debiti' : lang === 'fr' ? 'Dettes' : 'Deudas' },
-    { href: '/ahorros', icon: PiggyBank, label: lang === 'en' ? 'Savings' : lang === 'pt' ? 'Mestas' : lang === 'it' ? 'Risparmi' : lang === 'fr' ? 'Objectifs' : 'Ahorros' },
+    { href: '/ahorros', icon: PiggyBank, label: lang === 'en' ? 'Savings' : lang === 'pt' ? 'Metas' : lang === 'it' ? 'Risparmi' : lang === 'fr' ? 'Objectifs' : 'Ahorros' },
     { href: '/reminders', icon: Bell, label: lang === 'en' ? 'Reminders' : lang === 'pt' ? 'Lembretes' : lang === 'it' ? 'Promemoria' : lang === 'fr' ? 'Rappels' : 'Recordatorios' },
   ];
 

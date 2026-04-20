@@ -2,7 +2,7 @@
 
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, SavingsGoal } from '@/lib/db';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Trash2, Calendar, TrendingUp } from 'lucide-react';
 import CircularProgress from './CircularProgress';
 import { useState } from 'react';

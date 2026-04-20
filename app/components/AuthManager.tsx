@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import PinScreen from './PinScreen';
 import { processRecurringTransactions } from '@/app/utils/recurringTransactions';
 import Toast from './Toast';

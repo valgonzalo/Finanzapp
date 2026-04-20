@@ -37,6 +37,16 @@ export default function SettingsPage() {
   const handleUpdateSetting = async (key: string, value: any) => {
     if (userSettings?.id) {
       await db.settings.update(userSettings.id, { [key]: value });
+    } else {
+      await db.settings.add({
+        userName: 'Usuario',
+        onboardingCompleted: 1,
+        currency: 'ARS',
+        language: 'es',
+        isSecurityEnabled: 1,
+        isNotificationsEnabled: 1,
+        [key]: value
+      });
     }
   };
 
@@ -163,7 +173,10 @@ export default function SettingsPage() {
             <h3 className="text-xs font-bold uppercase tracking-widest">{lang === 'es' ? 'Preferencias de Sistema' : 'System Preferences'}</h3>
           </div>
           <div className="bg-surface/50 backdrop-blur-xl rounded-3xl border border-border/50 overflow-hidden divide-y divide-border/30">
-            <div className="p-6 flex items-center justify-between group hover:bg-primary/5 transition-colors cursor-pointer">
+            <div 
+              onClick={() => handleUpdateSetting('isNotificationsEnabled', userSettings?.isNotificationsEnabled ? 0 : 1)}
+              className="p-6 flex items-center justify-between group hover:bg-primary/5 transition-colors cursor-pointer"
+            >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                   <Bell className="w-5 h-5" />
@@ -173,8 +186,14 @@ export default function SettingsPage() {
                   <p className="text-xs text-text-muted">{lang === 'es' ? 'Alertas de vencimientos y recordatorios' : 'Due date and reminder alerts'}</p>
                 </div>
               </div>
-              <div className="w-12 h-6 bg-primary rounded-full p-1 cursor-pointer">
-                <div className="w-4 h-4 bg-white rounded-full translate-x-6" />
+              <div className={cn(
+                "w-12 h-6 rounded-full p-1 transition-all duration-300",
+                userSettings?.isNotificationsEnabled ? "bg-primary" : "bg-border"
+              )}>
+                <div className={cn(
+                  "w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-sm",
+                  userSettings?.isNotificationsEnabled ? "translate-x-6" : "translate-x-0"
+                )} />
               </div>
             </div>
 

@@ -57,6 +57,7 @@ export interface UserSettings {
   currency?: string;
   language?: string;
   isSecurityEnabled: number;
+  isNotificationsEnabled: number;
   pin?: string;
 }
 
@@ -139,6 +140,9 @@ export class FinanzAppDB extends Dexie {
     this.version(8).stores({
       savingsGoals: '++id, is_completed',
       savingsContributions: '++id, goal_id'
+    });
+    this.version(9).stores({
+      settings: '++id'
     });
   }
 }

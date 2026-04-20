@@ -111,7 +111,19 @@ export const translations = {
       settings: "Settings",
       preferences: "Preferences",
       currency: "Currency",
-      language: "Language"
+      language: "Language",
+      ahorros: "Savings"
+    },
+    ahorros: {
+      title: "Savings",
+      subtitle: "Building your financial freedom step by step.",
+      total_accumulated: "Total Accumulated",
+      new_goal: "New Goal",
+      no_goals_title: "You don't have goals yet",
+      no_goals_subtitle: "Create your first savings goal to start seeing progress.",
+      create_goal_btn: "Create Goal",
+      progress_vault: "Preparing Vault...",
+      activate_goal: "Activate Goal"
     },
     chatbot: {
       greeting: "Hi! I'm FinanzBot. Tell me what you want to register, for example: 'Spent 500 on food' or 'Carlos owes me 1000'.",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, DollarSign, Plus, FileText } from 'lucide-react';
 import { db, SavingsGoal } from '@/lib/db';
 
