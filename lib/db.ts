@@ -60,12 +60,51 @@ export interface UserSettings {
   pin?: string;
 }
 
+export interface RecurringTransaction {
+  id?: number;
+  type: 'income' | 'expense';
+  amount: number;
+  category: string;
+  description: string;
+  recurrence: 'daily' | 'weekly' | 'monthly';
+  day_of_month?: number;
+  day_of_week?: number;
+  is_active: number;
+  last_executed?: string;
+  next_execution?: string;
+  created_at: string;
+}
+
+export interface SavingsGoal {
+  id?: number;
+  name: string;
+  emoji: string;
+  target_amount: number;
+  current_amount: number;
+  color: string;
+  deadline?: string;
+  notes?: string;
+  is_completed: number;
+  created_at: string;
+}
+
+export interface SavingsContribution {
+  id?: number;
+  goal_id: number;
+  amount: number;
+  note?: string;
+  date: string;
+}
+
 export class FinanzAppDB extends Dexie {
   transactions!: Table<Transaction>;
   debts!: Table<Debt>;
   debt_installments!: Table<DebtInstallment>;
   reminders!: Table<Reminder>;
   settings!: Table<UserSettings>;
+  recurringTransactions!: Table<RecurringTransaction>;
+  savingsGoals!: Table<SavingsGoal>;
+  savingsContributions!: Table<SavingsContribution>;
 
   constructor() {
     super('FinanzAppDB');
@@ -93,6 +132,13 @@ export class FinanzAppDB extends Dexie {
     });
     this.version(6).stores({
       settings: '++id'
+    });
+    this.version(7).stores({
+      recurringTransactions: '++id, type, recurrence, is_active, next_execution'
+    });
+    this.version(8).stores({
+      savingsGoals: '++id, is_completed',
+      savingsContributions: '++id, goal_id'
     });
   }
 }

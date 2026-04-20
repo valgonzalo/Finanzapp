@@ -30,8 +30,8 @@
   --color-debt-partial: #60A5FA;
   --color-debt-paid: #00FF88;
 
-  --font-sans: var(--font-urbanist);
-  --font-display: var(--font-urbanist);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
 }
 
 body {

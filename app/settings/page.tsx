@@ -15,16 +15,24 @@ import {
   Download, 
   Trash2, 
   ChevronRight,
-  Info
+  Info,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useState } from 'react';
+import ChangePinModal from '@/app/components/ChangePinModal';
+import RecurringList from '@/app/components/RecurringList';
+import RecurringModal from '@/app/components/RecurringModal';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { lang, t } = useTranslation();
   const settings = useLiveQuery(() => db.settings.toArray());
   const userSettings = settings?.[0];
+  const [isChangePinOpen, setIsChangePinOpen] = useState(false);
+  const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
 
   const handleUpdateSetting = async (key: string, value: any) => {
     if (userSettings?.id) {
@@ -46,11 +54,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="p-4 md:p-10 lg:p-16 space-y-10 md:space-y-12 pb-32 max-w-7xl mx-auto"
-    >
+    <div className="relative">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-4 md:p-10 lg:p-16 space-y-10 md:space-y-12 pb-32 max-w-7xl mx-auto"
+      >
       <header className="pt-4 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-4 mb-2">
@@ -185,50 +194,33 @@ export default function SettingsPage() {
             <div className="p-6 flex flex-col gap-4 group hover:bg-primary/5 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                    userSettings?.isSecurityEnabled ? "bg-primary/10 text-primary" : "bg-text-muted/10 text-text-muted"
-                  )}>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-colors">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="font-bold text-text-primary">{t.security.title}</h4>
-                    <p className="text-xs text-text-muted">{t.security.enable_pin}</p>
+                    <p className="text-xs text-text-muted">{lang === 'es' ? 'Tu acceso está protegido con PIN' : 'Your access is protected with PIN'}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleUpdateSetting('isSecurityEnabled', userSettings?.isSecurityEnabled ? 0 : 1)}
-                  className={cn(
-                    "w-12 h-6 rounded-full p-1 transition-all duration-300",
-                    userSettings?.isSecurityEnabled ? "bg-primary" : "bg-surface-alt border border-border/50"
-                  )}
-                >
-                  <div className={cn(
-                    "w-4 h-4 bg-white rounded-full transition-transform duration-300 shadow-sm",
-                    userSettings?.isSecurityEnabled ? "translate-x-6" : "translate-x-0"
-                  )} />
-                </button>
+                <div className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                  {lang === 'es' ? 'ACTIVO' : 'ACTIVE'}
+                </div>
               </div>
 
-              {userSettings?.isSecurityEnabled === 1 && (
+              {typeof window !== 'undefined' && localStorage.getItem('pin_configured') === 'true' && (
                 <div className="pt-2 animate-in fade-in slide-in-from-top-2">
-                  <label className="text-[10px] font-bold text-text-muted uppercase ml-2">{t.security.setup_pin}</label>
-                  <input 
-                    type="password" 
-                    maxLength={4}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={userSettings?.pin || ''} 
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      if (val.length <= 4) handleUpdateSetting('pin', val);
-                    }}
-                    className="w-full bg-surface-alt border border-border/50 rounded-2xl p-4 text-text-primary focus:border-primary outline-none transition-all font-mono text-2xl tracking-[1em] text-center mt-2"
-                    placeholder="****"
-                  />
+                  <button 
+                    onClick={() => setIsChangePinOpen(true)}
+                    className="w-full bg-surface-alt border border-border/50 hover:border-primary/50 text-text-primary font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    {lang === 'es' ? 'Cambiar PIN de Acceso' : 'Change Access PIN'}
+                  </button>
                 </div>
               )}
             </div>
+
+
 
             <div 
               onClick={() => alert(lang === 'es' ? 'Funcionalidad de exportación en desarrollo...' : 'Export functionality in development...')}
@@ -248,6 +240,24 @@ export default function SettingsPage() {
           </div>
         </motion.section>
 
+        {/* Recurrentes Section */}
+        <motion.section variants={sectionVariants} className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-2 text-text-muted">
+              <Clock className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-widest">{lang === 'es' ? 'Movimientos Recurrentes' : 'Recurring Movements'}</h3>
+            </div>
+            <button 
+              onClick={() => setIsRecurringModalOpen(true)}
+              className="text-[10px] font-bold text-primary hover:text-primary-bright uppercase tracking-tighter bg-primary/10 px-3 py-1 rounded-full border border-primary/20 transition-all"
+            >
+              + {lang === 'es' ? 'Nuevo' : 'New'}
+            </button>
+          </div>
+          
+          <RecurringList />
+        </motion.section>
+
         {/* Info & Support */}
         <motion.section variants={sectionVariants} className="space-y-4">
           <div className="flex items-center gap-2 px-2 text-text-muted">
@@ -259,11 +269,20 @@ export default function SettingsPage() {
               <h4 className="font-bold text-text-primary">FinanzApp Pro</h4>
               <p className="text-xs text-text-muted mt-1">Version 1.4.0 • Build 2026.04</p>
             </div>
-            <button className="bg-surface-alt hover:bg-surface border border-border/50 text-text-primary font-bold py-2 px-6 rounded-2xl text-sm transition-all">
+            <Link 
+              href="https://wa.me/5491133131097?text=Hola%20Val,%20tengo%20una%20consulta%20sobre%20FinanzApp"
+              target="_blank"
+              className="bg-surface-alt hover:bg-surface border border-border/50 text-text-primary font-bold py-2 px-6 rounded-2xl text-sm transition-all text-center no-underline"
+            >
               {lang === 'es' ? 'Contactar Desarrollador' : 'Contact Developer'}
-            </button>
+            </Link>
           </div>
         </motion.section>
+
+        <RecurringModal 
+          isOpen={isRecurringModalOpen} 
+          onClose={() => setIsRecurringModalOpen(false)} 
+        />
 
         {/* Danger Zone */}
         <motion.section variants={sectionVariants} className="pt-8">
@@ -287,5 +306,11 @@ export default function SettingsPage() {
         </motion.section>
       </motion.div>
     </motion.div>
-  );
+
+    <ChangePinModal 
+      isOpen={isChangePinOpen} 
+      onClose={() => setIsChangePinOpen(false)} 
+    />
+  </div>
+);
 }

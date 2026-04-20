@@ -5,16 +5,24 @@ import { db } from '@/lib/db';
 import { motion, AnimatePresence } from 'motion/react';
 import { Wallet, ArrowRight, ArrowLeft, Check, Globe, Coins, User, ShieldCheck, Lock, Delete } from 'lucide-react';
 import { CURRENCIES, LANGUAGES } from '@/lib/constants';
+import { useAuth } from '@/app/context/AuthContext';
+
+import { translations } from '@/lib/translations';
 
 type OnboardingStep = 'welcome' | 'name' | 'currency' | 'language' | 'security' | 'ready';
 
 export default function Onboarding({ onComplete }: { onComplete: () => void }) {
+  const { setupPIN } = useAuth();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [name, setName] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0].id);
   const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].id);
   const [pin, setPin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get current translation based on selection
+  const t = (translations[selectedLanguage as keyof typeof translations] || translations.es).onboarding;
+  const common = (translations[selectedLanguage as keyof typeof translations] || translations.es).common;
 
   const handleFinish = async () => {
     setIsSubmitting(true);
@@ -27,6 +35,11 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         pin: pin,
         onboardingCompleted: 1
       });
+
+      if (pin.length === 4) {
+        await setupPIN(pin);
+      }
+      
       onComplete();
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -36,18 +49,18 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   };
 
   const nextStep = () => {
-    if (step === 'welcome') setStep('name');
+    if (step === 'welcome') setStep('language');
+    else if (step === 'language') setStep('name');
     else if (step === 'name') setStep('currency');
-    else if (step === 'currency') setStep('language');
-    else if (step === 'language') setStep('security');
+    else if (step === 'currency') setStep('security');
     else if (step === 'security') setStep('ready');
   };
 
   const prevStep = () => {
-    if (step === 'name') setStep('welcome');
+    if (step === 'language') setStep('welcome');
+    else if (step === 'name') setStep('language');
     else if (step === 'currency') setStep('name');
-    else if (step === 'language') setStep('currency');
-    else if (step === 'security') setStep('language');
+    else if (step === 'security') setStep('currency');
     else if (step === 'ready') setStep('security');
   };
 
@@ -85,14 +98,16 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
               </div>
               <div className="space-y-4">
                 <h1 className="text-4xl md:text-6xl font-display font-bold text-text-primary tracking-tight leading-tight">
-                  Gestiona con <br /><span className="text-primary italic">Estilo</span>
+                  {selectedLanguage === 'es' ? (
+                    <>Gestiona con <br /><span className="text-primary italic">Estilo</span></>
+                  ) : t.welcome_title}
                 </h1>
                 <p className="text-text-secondary text-lg md:text-xl max-w-sm mx-auto leading-relaxed">
-                  Bienvenido a la herramienta financiera más sofisticada, privada y personal.
+                  {t.welcome_subtitle}
                 </p>
                 <div className="flex items-center justify-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.2em] bg-primary/5 w-fit mx-auto px-4 py-2 rounded-full border border-primary/10">
                   <ShieldCheck className="w-4 h-4" />
-                  Soberanía de Datos Garantizada
+                  {t.data_security}
                 </div>
               </div>
               <motion.button
@@ -101,7 +116,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 onClick={nextStep}
                 className="w-full max-w-xs mx-auto bg-primary text-text-inverse font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all text-xl"
               >
-                Comenzar <ArrowRight className="w-6 h-6" />
+                {t.start_btn} <ArrowRight className="w-6 h-6" />
               </motion.button>
             </motion.div>
           )}
@@ -119,15 +134,15 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
                   <User className="w-6 h-6 text-primary" />
                 </div>
-                <h2 className="text-3xl font-display font-bold text-text-primary">¿Cuál es tu nombre?</h2>
-                <p className="text-text-secondary">Para personalizar tu experiencia financiera.</p>
+                <h2 className="text-3xl font-display font-bold text-text-primary">{t.name_title}</h2>
+                <p className="text-text-secondary">{t.name_subtitle}</p>
               </div>
               <input
                 autoFocus
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Escribe tu nombre..."
+                placeholder={t.name_placeholder}
                 className="w-full bg-surface-alt border border-border/50 rounded-2xl p-5 text-xl text-text-primary focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl"
               />
               <div className="flex gap-4">
@@ -139,7 +154,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   onClick={nextStep} 
                   className="flex-1 bg-primary text-text-inverse font-bold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  Siguiente <ArrowRight className="w-6 h-6" />
+                  {common.next} <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </motion.div>
@@ -158,25 +173,25 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6">
                   <Coins className="w-6 h-6 text-blue-500" />
                 </div>
-                <h2 className="text-3xl font-display font-bold text-text-primary">Elige tu moneda</h2>
-                <p className="text-text-secondary">Usaremos esta moneda para todos tus balances.</p>
+                <h2 className="text-3xl font-display font-bold text-text-primary">{t.currency_title}</h2>
+                <p className="text-text-secondary">{t.currency_subtitle}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="grid grid-cols-2 gap-2">
                 {CURRENCIES.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCurrency(c.id)}
-                    className={`p-4 rounded-2xl border-2 text-left transition-all ${
+                    className={`p-3 rounded-2xl border-2 text-left transition-all ${
                       selectedCurrency === c.id 
                         ? 'border-primary bg-primary/5 text-text-primary' 
                         : 'border-border/50 bg-surface-alt text-text-muted hover:border-border hover:bg-surface-alt/80'
                     }`}
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-lg font-bold">{c.symbol}</span>
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-base font-bold">{c.symbol}</span>
                       {selectedCurrency === c.id && <Check className="w-4 h-4 text-primary" />}
                     </div>
-                    <p className="text-sm font-medium leading-tight">{c.label}</p>
+                    <p className="text-xs font-bold leading-tight line-clamp-1">{c.label}</p>
                     <p className="text-[10px] opacity-60 uppercase">{c.id}</p>
                   </button>
                 ))}
@@ -189,7 +204,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   onClick={nextStep} 
                   className="flex-1 bg-primary text-text-inverse font-bold rounded-2xl flex items-center justify-center gap-2"
                 >
-                  Siguiente <ArrowRight className="w-6 h-6" />
+                  {common.next} <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </motion.div>
@@ -208,18 +223,18 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6">
                   <Globe className="w-6 h-6 text-purple-500" />
                 </div>
-                <h2 className="text-3xl font-display font-bold text-text-primary">Idioma de la App</h2>
-                <p className="text-text-secondary">Configura FinanzApp en tu lenguaje nativo.</p>
+                <h2 className="text-3xl font-display font-bold text-text-primary">{t.language_title}</h2>
+                <p className="text-text-secondary">{t.language_subtitle}</p>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {LANGUAGES.map((l) => (
                   <button
                     key={l.id}
                     onClick={() => setSelectedLanguage(l.id)}
-                    className={`w-full p-5 rounded-2xl border-2 flex items-center justify-between transition-all ${
+                    className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
                       selectedLanguage === l.id 
-                        ? 'border-primary bg-primary/5 text-primary' 
-                        : 'border-border/50 bg-surface-alt text-text-muted'
+                        ? 'border-primary bg-primary/5 text-primary shadow-[0_0_15px_rgba(0,255,136,0.1)]' 
+                        : 'border-border/50 bg-surface-alt text-text-muted hover:bg-surface-alt/80'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -238,7 +253,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   onClick={nextStep} 
                   className="flex-1 bg-primary text-text-inverse font-bold rounded-2xl flex items-center justify-center gap-2"
                 >
-                  Finalizar Configuración <Check className="w-6 h-6" />
+                  {common.next} <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </motion.div>
@@ -257,8 +272,8 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                   <Lock className="w-6 h-6 text-primary" />
                 </div>
-                <h2 className="text-3xl font-display font-bold text-text-primary">Acceso Seguro</h2>
-                <p className="text-text-secondary">Crea un PIN de 4 dígitos para proteger tu privacidad.</p>
+                <h2 className="text-3xl font-display font-bold text-text-primary">{t.security_title}</h2>
+                <p className="text-text-secondary">{t.security_subtitle}</p>
               </div>
 
               {/* PIN Display */}
@@ -308,7 +323,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   onClick={nextStep} 
                   className="flex-1 bg-primary text-text-inverse font-bold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  Confirmar PIN <ArrowRight className="w-6 h-6" />
+                  {t.confirm_pin_btn} <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </motion.div>
@@ -330,18 +345,20 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 </div>
               </div>
               <div className="space-y-4">
-                <h2 className="text-4xl font-display font-bold text-text-primary">¡Todo listo, {name}!</h2>
+                <h2 className="text-4xl font-display font-bold text-text-primary">
+                  {t.ready_title.replace('{name}', name)}
+                </h2>
                 <p className="text-text-secondary max-w-sm mx-auto">
-                  Hemos configurado FinanzApp según tus preferencias. Tus datos ya están seguros y listos para usar.
+                  {t.ready_subtitle}
                 </p>
               </div>
               <div className="bg-surface-alt/50 border border-border/50 rounded-3xl p-6 text-left space-y-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-text-muted italic">Moneda:</span>
+                  <span className="text-text-muted italic">{translations[selectedLanguage as keyof typeof translations].dashboard.currency}:</span>
                   <span className="font-bold text-text-primary uppercase">{selectedCurrency}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-text-muted italic">Idioma:</span>
+                  <span className="text-text-muted italic">{translations[selectedLanguage as keyof typeof translations].dashboard.language}:</span>
                   <span className="font-bold text-text-primary uppercase">{LANGUAGES.find(l => l.id === selectedLanguage)?.label}</span>
                 </div>
               </div>
@@ -352,7 +369,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 disabled={isSubmitting}
                 className="w-full bg-primary text-text-inverse font-bold py-5 rounded-2xl text-xl shadow-xl shadow-primary/20"
               >
-                {isSubmitting ? 'Iniciando...' : 'Comenzar ahora'}
+                {isSubmitting ? common.loading : t.finish_btn}
               </motion.button>
             </motion.div>
           )}
@@ -361,7 +378,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         {/* Progress dots */}
         {step !== 'welcome' && step !== 'ready' && (
           <div className="mt-8 flex justify-center gap-2">
-            {(['name', 'currency', 'language', 'security'] as const).map((s) => (
+            {(['language', 'name', 'currency', 'security'] as const).map((s) => (
               <div 
                 key={s} 
                 className={`w-2 h-2 rounded-full transition-all duration-500 ${step === s ? 'w-8 bg-primary' : 'bg-border'}`} 

@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 import { formatRelativeDate } from '@/lib/utils';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Plus, Wallet, Bell, ChevronRight, ArrowLeftRight, Users, Pencil, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Plus, Wallet, Bell, ChevronRight, ArrowLeftRight, Users, Pencil, AlertTriangle, CheckCircle2, ShieldCheck, PiggyBank, Download, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import BottomSheet from '@/components/BottomSheet';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Onboarding from '@/components/Onboarding';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useTranslation } from '@/hooks/useTranslation';
+import ExportPDFModal from '@/app/components/ExportPDFModal';
 
 const EMPTY_ARRAY: any[] = [];
 
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const { t, lang } = useTranslation();
   const [greeting, setGreeting] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const settings = useLiveQuery(() => db.settings.toArray());
   const userSetting = settings?.[0];
@@ -130,6 +132,18 @@ export default function Dashboard() {
     db.reminders.where('is_active').equals(1).limit(3).toArray()
   ) || [];
 
+  const activeGoals = useLiveQuery(() => 
+    db.savingsGoals.where('is_completed').equals(0).toArray()
+  ) || [];
+
+  const topGoals = useMemo(() => {
+    return [...activeGoals].sort((a, b) => {
+      const pctA = a.current_amount / Math.max(a.target_amount, 1);
+      const pctB = b.current_amount / Math.max(b.target_amount, 1);
+      return pctB - pctA;
+    }).slice(0, 2);
+  }, [activeGoals]);
+
   const urgentItems = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     
@@ -202,7 +216,9 @@ export default function Dashboard() {
 
       {/* Urgent Notices Banner */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4">
+        {/* ... */}
         <div className={`p-5 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-500 ${urgentItems.length > 0 ? 'bg-error-muted border-error/30' : 'bg-primary-muted border-primary/20'}`}>
+          {/* ... keeping urgent notice ... */}
           <div className="flex items-center gap-4">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${urgentItems.length > 0 ? 'bg-error text-white animate-pulse' : 'bg-primary text-text-inverse'}`}>
               {urgentItems.length > 0 ? <AlertTriangle className="w-6 h-6" /> : <CheckCircle2 className="w-6 h-6" />}
@@ -253,13 +269,37 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* FinanzBot Banner */}
+        <div 
+          onClick={() => window.dispatchEvent(new CustomEvent('open-finanzbot'))}
+          className="bg-gradient-to-r from-[#00FF88]/10 to-transparent p-4 rounded-3xl border border-[#00FF88]/20 flex items-center gap-4 cursor-pointer hover:bg-[#00FF88]/20 transition-all shadow-[0_0_20px_rgba(0,255,136,0.05)]"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-[#00FF88]/20 flex items-center justify-center text-[#00FF88]">
+            <Sparkles size={20} className="fill-current animate-pulse" />
+          </div>
+          <div>
+            <h4 className="font-bold font-display text-[#00FF88] text-sm md:text-base">✨ Consejos personalizados</h4>
+            <p className="text-xs md:text-sm text-text-muted">Usando tu data local con FinanzBot</p>
+          </div>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {/* Balance Card */}
         <motion.div variants={itemVariants} className="bg-gradient-to-br from-surface to-primary/10 rounded-3xl border border-primary/20 p-6 md:p-8 shadow-[0_0_30px_rgba(0,255,136,0.1)] relative overflow-hidden flex flex-col justify-center">
           <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-          <p className="text-text-secondary text-sm md:text-base mb-2 font-medium">{t.dashboard.net_balance}</p>
+          
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-text-secondary text-sm md:text-base font-medium">{t.dashboard.net_balance}</p>
+            <button 
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex items-center gap-2 text-[10px] font-bold text-primary hover:text-primary-bright uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 transition-all hover:bg-primary/20"
+            >
+              <Download size={14} /> Exportar PDF
+            </button>
+          </div>
+
           <h2 className={`text-5xl md:text-7xl font-display font-bold mb-8 tracking-tight ${balance >= 0 ? 'text-primary' : 'text-error'}`}>
             {formatCurrency(balance)}
           </h2>
@@ -412,8 +452,69 @@ export default function Dashboard() {
             </AnimatePresence>
           </div>
         </motion.div>
+
+        {/* Savings Goals Widget */}
+        <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 md:p-8 shadow-lg">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col">
+              <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl flex items-center gap-2">
+                <PiggyBank className="text-primary" size={24} /> Mis Ahorros
+              </h3>
+            </div>
+            <Link href="/ahorros" className="text-primary text-sm font-medium flex items-center bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors">
+              {t.dashboard.see_all} <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
+
+          <div className="space-y-4">
+            <AnimatePresence mode="popLayout">
+            {topGoals.length > 0 ? (
+              topGoals.map((g: any) => {
+                const pct = Math.min(100, Math.round((g.current_amount / g.target_amount) * 100));
+                return (
+                  <motion.div 
+                    layout 
+                    initial={{ opacity: 0, scale: 0.9 }} 
+                    animate={{ opacity: 1, scale: 1 }} 
+                    exit={{ opacity: 0, scale: 0.9 }} 
+                    key={g.id}
+                    onClick={() => router.push('/ahorros')}
+                    className="p-4 bg-surface-alt/50 rounded-2xl border border-border/50 hover:border-border transition-colors cursor-pointer"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl leading-none">{g.emoji}</span>
+                        <span className="text-sm font-bold text-text-primary">{g.name}</span>
+                      </div>
+                      <span className="text-xs font-bold" style={{ color: g.color }}>{pct}%</span>
+                    </div>
+                    
+                    <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden mb-2">
+                      <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: g.color }} />
+                    </div>
+                    
+                    <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-text-muted mt-1">
+                      <span>{formatCurrency(g.current_amount)}</span>
+                      <span>{formatCurrency(g.target_amount)}</span>
+                    </div>
+                  </motion.div>
+                );
+              })
+            ) : (
+              <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-6 bg-surface-alt/30 rounded-2xl border border-dashed border-border cursor-pointer hover:bg-surface-alt/50 transition-colors" onClick={() => router.push('/ahorros')}>
+                <PiggyBank className="w-8 h-8 text-text-muted mx-auto mb-2 opacity-50" />
+                <p className="text-text-muted text-sm px-4">Establecé metas de ahorro para empezar a construir tu futuro.</p>
+              </motion.div>
+            )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
       </div>
 
+      <ExportPDFModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+      />
 
     </motion.div>
   );

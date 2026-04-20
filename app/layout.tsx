@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
-import { Urbanist } from 'next/font/google';
+import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
 import FloatingActions from '@/components/FloatingActions';
 
-const urbanist = Urbanist({ 
+const inter = Inter({ 
   subsets: ['latin'], 
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-urbanist' 
+  variable: '--font-inter' 
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk'
 });
 
 export const metadata: Metadata = {
@@ -37,20 +41,23 @@ export const viewport = {
 };
 
 import ConditionalLayout from '@/components/ConditionalLayout';
+import { AuthProvider } from '@/app/context/AuthContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${urbanist.variable}`}>
+    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-background text-text-primary antialiased selection:bg-primary/30">
-        <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
-        </div>
-        <ConditionalLayout>
-          <main className="min-h-screen w-full max-w-[2000px] mx-auto relative px-4 md:px-8">
-            {children}
-          </main>
-        </ConditionalLayout>
+        <AuthProvider>
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
+          </div>
+          <ConditionalLayout>
+            <main className="min-h-screen w-full max-w-[2000px] mx-auto relative px-4 md:px-8">
+              {children}
+            </main>
+          </ConditionalLayout>
+        </AuthProvider>
       </body>
     </html>
   );

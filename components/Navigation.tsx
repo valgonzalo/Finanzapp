@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ArrowLeftRight, Users, Bell, Settings } from 'lucide-react';
+import { Home, ArrowLeftRight, Users, Bell, Settings, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -19,13 +19,14 @@ export default function Navigation() {
     { href: '/', icon: Home, label: lang === 'en' ? 'Dashboard' : lang === 'pt' ? 'Painel' : lang === 'it' ? 'Dashboard' : lang === 'fr' ? 'Tableau' : 'Dashboard' },
     { href: '/transactions', icon: ArrowLeftRight, label: lang === 'en' ? 'Transactions' : lang === 'pt' ? 'Transações' : lang === 'it' ? 'Transazioni' : lang === 'fr' ? 'Transactions' : 'Transacciones' },
     { href: '/debts', icon: Users, label: lang === 'en' ? 'Debts' : lang === 'pt' ? 'Dívidas' : lang === 'it' ? 'Debiti' : lang === 'fr' ? 'Dettes' : 'Deudas' },
+    { href: '/ahorros', icon: PiggyBank, label: lang === 'en' ? 'Savings' : lang === 'pt' ? 'Mestas' : lang === 'it' ? 'Risparmi' : lang === 'fr' ? 'Objectifs' : 'Ahorros' },
     { href: '/reminders', icon: Bell, label: lang === 'en' ? 'Reminders' : lang === 'pt' ? 'Lembretes' : lang === 'it' ? 'Promemoria' : lang === 'fr' ? 'Rappels' : 'Recordatorios' },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-border pb-safe pt-2 px-0 z-50 md:top-0 md:bottom-0 md:right-auto md:w-24 lg:w-28 xl:w-32 md:border-t-0 md:border-r md:flex md:flex-col md:pt-12 md:pb-8 md:px-0">
       {/* Mobile Grid / Desktop Column */}
-      <div className="grid grid-cols-5 md:flex md:flex-col h-full w-full max-w-lg mx-auto md:max-w-none md:gap-6">
+      <div className="grid grid-cols-6 md:flex md:flex-col h-full w-full mx-auto md:max-w-none md:gap-6 px-1 md:px-0">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
           const Icon = item.icon;

@@ -63,6 +63,25 @@ export const translations = {
       next: "Siguiente",
       back: "Atrás",
       finish: "Finalizar"
+    },
+    onboarding: {
+      welcome_title: "Gestiona con Estilo",
+      welcome_subtitle: "Bienvenido a la herramienta financiera más sofisticada, privada y personal.",
+      data_security: "tus datos estan 100% seguros",
+      start_btn: "Comenzar",
+      name_title: "¿Cuál es tu nombre?",
+      name_subtitle: "Para personalizar tu experiencia financiera.",
+      name_placeholder: "Escribe tu nombre...",
+      currency_title: "Elige tu moneda",
+      currency_subtitle: "Usaremos esta moneda para todos tus balances.",
+      language_title: "Idioma de la App",
+      language_subtitle: "Configura FinanzApp en tu lenguaje nativo.",
+      security_title: "Acceso Seguro",
+      security_subtitle: "Crea un PIN de 4 dígitos para proteger tu privacidad.",
+      confirm_pin_btn: "Confirmar PIN",
+      ready_title: "¡Todo listo!",
+      ready_subtitle: "Hemos configurado FinanzApp según tus preferencias. Tus datos ya están seguros y listos para usar.",
+      finish_btn: "Comenzar ahora"
     }
   },
   en: {
@@ -129,6 +148,25 @@ export const translations = {
       next: "Next",
       back: "Back",
       finish: "Finish"
+    },
+    onboarding: {
+      welcome_title: "Manage with Style",
+      welcome_subtitle: "Welcome to the most sophisticated, private, and personal financial tool.",
+      data_security: "your data is 100% secure",
+      start_btn: "Begin",
+      name_title: "What is your name?",
+      name_subtitle: "To personalize your financial experience.",
+      name_placeholder: "Type your name...",
+      currency_title: "Choose your currency",
+      currency_subtitle: "We will use this currency for all your balances.",
+      language_title: "App Language",
+      language_subtitle: "Configure FinanzApp in your native language.",
+      security_title: "Secure Access",
+      security_subtitle: "Create a 4-digit PIN to protect your privacy.",
+      confirm_pin_btn: "Confirm PIN",
+      ready_title: "All set!",
+      ready_subtitle: "We have configured FinanzApp according to your preferences. Your data is now secure and ready to use.",
+      finish_btn: "Start now"
     }
   },
   pt: {
@@ -195,6 +233,25 @@ export const translations = {
       next: "Próximo",
       back: "Voltar",
       finish: "Finalizar"
+    },
+    onboarding: {
+      welcome_title: "Gerencie com Estilo",
+      welcome_subtitle: "Bem-vindo à ferramenta financeira mais sofisticada, privada e pessoal.",
+      data_security: "seus dados estão 100% seguros",
+      start_btn: "Começar",
+      name_title: "Qual é o seu nome?",
+      name_subtitle: "Para personalizar sua experiência financeira.",
+      name_placeholder: "Escreva seu nome...",
+      currency_title: "Escolha sua moeda",
+      currency_subtitle: "Usaremos esta moeda para todos os seus saldos.",
+      language_title: "Idioma do App",
+      language_subtitle: "Configure FinanzApp no seu idioma nativo.",
+      security_title: "Acesso Seguro",
+      security_subtitle: "Crie um PIN de 4 dígitos para proteger sua privacidade.",
+      confirm_pin_btn: "Confirmar PIN",
+      ready_title: "Tudo pronto!",
+      ready_subtitle: "Configuramos FinanzApp de acordo com suas preferências. Seus dados já estão seguros e prontos para usar.",
+      finish_btn: "Começar agora"
     }
   },
   it: {
@@ -261,6 +318,25 @@ export const translations = {
       next: "Avanti",
       back: "Indietro",
       finish: "Fine"
+    },
+    onboarding: {
+      welcome_title: "Gestisci con Stile",
+      welcome_subtitle: "Benvenuto nello strumento finanziario più sofisticato, privato e personale.",
+      data_security: "i tuoi dati sono sicuri al 100%",
+      start_btn: "Inizia",
+      name_title: "Qual è il tuo nome?",
+      name_subtitle: "Per personalizzare la tua esperienza finanziaria.",
+      name_placeholder: "Scrivi il tuo nome...",
+      currency_title: "Scegli la tua valuta",
+      currency_subtitle: "Useremo questa valuta per tutti i tuoi saldi.",
+      language_title: "Lingua dell'App",
+      language_subtitle: "Configura FinanzApp nella tua lingua madre.",
+      security_title: "Accesso Sicuro",
+      security_subtitle: "Crea un PIN a 4 cifre per proteggere la tua privacy.",
+      confirm_pin_btn: "Conferma PIN",
+      ready_title: "Tutto pronto!",
+      ready_subtitle: "Abbiamo configurato FinanzApp in base alle tue preferenze. I tuoi dati sono ora sicuri e pronti all'uso.",
+      finish_btn: "Inizia ora"
     }
   },
   fr: {
@@ -327,6 +403,25 @@ export const translations = {
       next: "Suivant",
       back: "Retour",
       finish: "Terminer"
+    },
+    onboarding: {
+      welcome_title: "Gérez avec Style",
+      welcome_subtitle: "Bienvenue dans l'outil financier le plus sophistiqué, privé et personnel.",
+      data_security: "vos données sont sécurisées à 100%",
+      start_btn: "Commencer",
+      name_title: "Quel est votre nom ?",
+      name_subtitle: "Pour personnaliser votre expérience financière.",
+      name_placeholder: "Écrivez votre nom...",
+      currency_title: "Choisissez votre devise",
+      currency_subtitle: "Nous utiliserons cette devise pour tous vos soldes.",
+      language_title: "Langue de l'App",
+      language_subtitle: "Configurez FinanzApp dans votre langue maternelle.",
+      security_title: "Accès Sécurisé",
+      security_subtitle: "Créez un PIN à 4 chiffres pour protéger votre vie privée.",
+      confirm_pin_btn: "Confirmer PIN",
+      ready_title: "Tout est prêt !",
+      ready_subtitle: "Nous avons configuré FinanzApp selon vos préférences. Vos données sont désormais sécurisées et prêtes à l'emploi.",
+      finish_btn: "Commencer maintenant"
     }
   }
 };

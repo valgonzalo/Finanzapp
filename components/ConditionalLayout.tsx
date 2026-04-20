@@ -7,7 +7,7 @@ import Onboarding from './Onboarding';
 import { useRouter } from 'next/navigation';
 import Navigation from './Navigation';
 import FloatingActions from './FloatingActions';
-import SecurityGate from './SecurityGate';
+import AuthManager from '@/app/components/AuthManager';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -37,14 +37,14 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   }
 
 
-  // If onboarding IS completed, we render the full system
+  // If onboarding IS completed, we render the full system with the AuthManager
   return (
-    <SecurityGate>
+    <AuthManager>
       <div className="pb-20 md:pb-0 md:pl-24 lg:pl-28 xl:pl-32 transition-all duration-500">
         {children}
         <Navigation />
         <FloatingActions />
       </div>
-    </SecurityGate>
+    </AuthManager>
   );
 }
