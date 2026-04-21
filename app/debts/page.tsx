@@ -338,7 +338,7 @@ function DebtsScreen() {
       </BottomSheet>
       <Toast 
         message={toastMessage} 
-        onClear={() => setToastMessage(null)} 
+        onClose={() => setToastMessage(null)} 
       />
     </motion.div>
   );

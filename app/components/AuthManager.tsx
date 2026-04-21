@@ -46,7 +46,7 @@ export default function AuthManager({ children }: { children: React.ReactNode })
         )}
       </AnimatePresence>
       
-      <Toast message={toastMessage} onClear={() => setToastMessage(null)} />
+      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
 
       {/* Solo mostramos el contenido si no estamos en setup (en setup mostramos solo PinScreen) 
           o si ya estamos desbloqueados */}
