@@ -5,11 +5,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, PiggyBank, Target, ArrowRight } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import SavingsGoalCard from '@/app/components/SavingsGoalCard';
 import AddGoalModal from '@/app/components/AddGoalModal';
 import SavingsGoalDetail from '@/app/components/SavingsGoalDetail';
 
 export default function SavingsPage() {
+  const { t } = useTranslation();
   const goals = useLiveQuery(() => db.savingsGoals.toArray());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<number | null>(null);
@@ -25,14 +27,14 @@ export default function SavingsPage() {
             <div className="p-3 bg-[#00FF8810] rounded-2xl text-[#00FF88]">
               <PiggyBank size={32} />
             </div>
-            <h1 className="text-4xl md:text-6xl font-black font-display text-white">Ahorros</h1>
+            <h1 className="text-4xl md:text-6xl font-black font-display text-white">{t.ahorros.title}</h1>
           </div>
-          <p className="text-white/40 text-lg">Construyendo tu libertad financiera paso a paso.</p>
+          <p className="text-white/40 text-lg">{t.ahorros.subtitle}</p>
         </div>
 
         <div className="bg-[#111] border border-white/5 p-6 rounded-[32px] flex items-center gap-6 min-w-[280px]">
           <div className="space-y-1 flex-1">
-            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Total Acumulado</p>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">{t.ahorros.total_accumulated}</p>
             <p className="text-3xl font-black font-display text-[#00FF88]">
               ${totalSaved.toLocaleString()}
             </p>
@@ -67,14 +69,14 @@ export default function SavingsPage() {
                 <Target size={48} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-white/50">Todavía no tenés metas</h3>
-                <p className="text-white/20 text-sm max-w-xs mx-auto">Creá tu primer objetivo de ahorro para empezar a ver el progreso.</p>
+                <h3 className="text-xl font-bold text-white/50">{t.ahorros.no_goals_title}</h3>
+                <p className="text-white/20 text-sm max-w-xs mx-auto">{t.ahorros.no_goals_subtitle}</p>
               </div>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
                 className="flex items-center gap-2 text-[#00FF88] font-bold uppercase tracking-widest text-xs hover:gap-4 transition-all"
               >
-                Crear Objetivo <ArrowRight size={16} />
+                {t.ahorros.create_goal_btn} <ArrowRight size={16} />
               </button>
             </motion.div>
           )}

@@ -16,11 +16,11 @@ export default function Navigation() {
   const pathname = usePathname();
   const { lang, t } = useTranslation();
   const navItems = [
-    { href: '/', icon: Home, label: lang === 'en' ? 'Dashboard' : lang === 'pt' ? 'Painel' : lang === 'it' ? 'Dashboard' : lang === 'fr' ? 'Tableau' : 'Dashboard' },
-    { href: '/transactions', icon: ArrowLeftRight, label: lang === 'en' ? 'Transactions' : lang === 'pt' ? 'Transações' : lang === 'it' ? 'Transazioni' : lang === 'fr' ? 'Transactions' : 'Transacciones' },
-    { href: '/debts', icon: Users, label: lang === 'en' ? 'Debts' : lang === 'pt' ? 'Dívidas' : lang === 'it' ? 'Debiti' : lang === 'fr' ? 'Dettes' : 'Deudas' },
-    { href: '/ahorros', icon: PiggyBank, label: lang === 'en' ? 'Savings' : lang === 'pt' ? 'Metas' : lang === 'it' ? 'Risparmi' : lang === 'fr' ? 'Objectifs' : 'Ahorros' },
-    { href: '/reminders', icon: Bell, label: lang === 'en' ? 'Reminders' : lang === 'pt' ? 'Lembretes' : lang === 'it' ? 'Promemoria' : lang === 'fr' ? 'Rappels' : 'Recordatorios' },
+    { href: '/', icon: Home, label: t.dashboard.greeting },
+    { href: '/transactions', icon: ArrowLeftRight, label: t.dashboard.income },
+    { href: '/debts', icon: Users, label: t.dashboard.me_debten },
+    { href: '/ahorros', icon: PiggyBank, label: t.dashboard.ahorros },
+    { href: '/reminders', icon: Bell, label: t.dashboard.this_week },
   ];
 
   return (

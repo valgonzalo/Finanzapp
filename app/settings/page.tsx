@@ -25,6 +25,9 @@ import { useState } from 'react';
 import ChangePinModal from '@/app/components/ChangePinModal';
 import RecurringList from '@/app/components/RecurringList';
 import RecurringModal from '@/app/components/RecurringModal';
+import { exportDataToJSON, importDataFromJSON } from '@/app/utils/backup';
+import Toast from '@/app/components/Toast';
+import { Upload } from 'lucide-react';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -33,6 +36,12 @@ export default function SettingsPage() {
   const userSettings = settings?.[0];
   const [isChangePinOpen, setIsChangePinOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const handleUpdateSetting = async (key: string, value: any) => {
     if (userSettings?.id) {
@@ -242,7 +251,11 @@ export default function SettingsPage() {
 
 
             <div 
-              onClick={() => alert(lang === 'es' ? 'Funcionalidad de exportación en desarrollo...' : 'Export functionality in development...')}
+              onClick={async () => {
+                const ok = await exportDataToJSON();
+                if (ok) showToast(lang === 'es' ? 'Backup exportado con éxito' : 'Backup exported successfully');
+                else showToast(lang === 'es' ? 'Error al exportar' : 'Export failed', 'error');
+              }}
               className="p-6 flex items-center justify-between group hover:bg-primary/5 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-4">
@@ -250,10 +263,47 @@ export default function SettingsPage() {
                   <Download className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-text-primary">{lang === 'es' ? 'Exportar Datos' : 'Export Data'}</h4>
+                  <h4 className="font-bold text-text-primary">{lang === 'es' ? 'Exportar Backup' : 'Export Backup'}</h4>
                   <p className="text-xs text-text-muted">{lang === 'es' ? 'Descargar una copia de seguridad local (JSON)' : 'Download a local backup copy (JSON)'}</p>
                 </div>
               </div>
+              <ChevronRight className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+            </div>
+
+            <div 
+              className="p-6 flex items-center justify-between group hover:bg-primary/5 transition-colors cursor-pointer relative"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-text-primary">{lang === 'es' ? 'Importar Backup' : 'Import Backup'}</h4>
+                  <p className="text-xs text-text-muted">{lang === 'es' ? 'Cargar datos desde un archivo JSON' : 'Upload data from a JSON file'}</p>
+                </div>
+              </div>
+              <input 
+                type="file" 
+                accept=".json"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (confirm(lang === 'es' ? '¿Restaurar backup? Los datos actuales se reemplazarán.' : 'Restore backup? Current data will be replaced.')) {
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                      const ok = await importDataFromJSON(event.target?.result as string);
+                      if (ok) {
+                        showToast(lang === 'es' ? 'Datos importados. Reiniciando...' : 'Data imported. Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                      } else {
+                        showToast(lang === 'es' ? 'Error al importar archivo' : 'Error importing file', 'error');
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
               <ChevronRight className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
             </div>
           </div>
@@ -330,6 +380,8 @@ export default function SettingsPage() {
       isOpen={isChangePinOpen} 
       onClose={() => setIsChangePinOpen(false)} 
     />
+
+    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
   </div>
 );
 }

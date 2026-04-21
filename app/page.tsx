@@ -298,7 +298,7 @@ export default function Dashboard() {
               onClick={() => setIsExportModalOpen(true)}
               className="flex items-center gap-2 text-[10px] font-bold text-primary hover:text-primary-bright uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 transition-all hover:bg-primary/20"
             >
-              <Download size={14} /> Exportar PDF
+              <Download size={14} /> {t.common.save} PDF
             </button>
           </div>
 
@@ -335,6 +335,63 @@ export default function Dashboard() {
                 <p className="text-lg md:text-2xl font-semibold text-error">{formatCurrency(expense)}</p>
               </div>
             </div>
+          </div>
+        </motion.div>
+        
+        {/* Savings Goals Widget - Moved up for mobile visibility */}
+        <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 md:p-8 shadow-lg">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col">
+              <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl flex items-center gap-2">
+                <PiggyBank className="text-primary" size={24} /> {t.ahorros.title}
+              </h3>
+            </div>
+            <Link href="/ahorros" className="text-primary text-sm font-medium flex items-center bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors">
+              {t.dashboard.see_all} <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
+
+          <div className="space-y-4">
+            <AnimatePresence mode="popLayout">
+            {topGoals.length > 0 ? (
+              topGoals.map((g: any) => {
+                const pct = Math.min(100, Math.round((g.current_amount / g.target_amount) * 100));
+                return (
+                  <motion.div 
+                    layout 
+                    initial={{ opacity: 0, scale: 0.9 }} 
+                    animate={{ opacity: 1, scale: 1 }} 
+                    exit={{ opacity: 0, scale: 0.9 }} 
+                    key={g.id}
+                    onClick={() => router.push('/ahorros')}
+                    className="p-4 bg-surface-alt/50 rounded-2xl border border-border/50 hover:border-border transition-colors cursor-pointer"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl leading-none">{g.emoji}</span>
+                        <span className="text-sm font-bold text-text-primary">{g.name}</span>
+                      </div>
+                      <span className="text-xs font-bold" style={{ color: g.color }}>{pct}%</span>
+                    </div>
+                    
+                    <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden mb-2">
+                      <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: g.color }} />
+                    </div>
+                    
+                    <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-text-muted mt-1">
+                      <span>{formatCurrency(g.current_amount)}</span>
+                      <span>{formatCurrency(g.target_amount)}</span>
+                    </div>
+                  </motion.div>
+                );
+              })
+            ) : (
+              <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-6 bg-surface-alt/30 rounded-2xl border border-dashed border-border cursor-pointer hover:bg-surface-alt/50 transition-colors" onClick={() => router.push('/ahorros')}>
+                <PiggyBank className="w-8 h-8 text-text-muted mx-auto mb-2 opacity-50" />
+                <p className="text-text-muted text-sm px-4">{t.ahorros.no_goals_subtitle}</p>
+              </motion.div>
+            )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
@@ -455,62 +512,6 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Savings Goals Widget */}
-        <motion.div variants={itemVariants} className="bg-surface/90 rounded-3xl border border-border p-6 md:p-8 shadow-lg">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex flex-col">
-              <h3 className="text-text-primary font-display font-semibold text-lg md:text-xl flex items-center gap-2">
-                <PiggyBank className="text-primary" size={24} /> Mis Ahorros
-              </h3>
-            </div>
-            <Link href="/ahorros" className="text-primary text-sm font-medium flex items-center bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors">
-              {t.dashboard.see_all} <ChevronRight className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-
-          <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
-            {topGoals.length > 0 ? (
-              topGoals.map((g: any) => {
-                const pct = Math.min(100, Math.round((g.current_amount / g.target_amount) * 100));
-                return (
-                  <motion.div 
-                    layout 
-                    initial={{ opacity: 0, scale: 0.9 }} 
-                    animate={{ opacity: 1, scale: 1 }} 
-                    exit={{ opacity: 0, scale: 0.9 }} 
-                    key={g.id}
-                    onClick={() => router.push('/ahorros')}
-                    className="p-4 bg-surface-alt/50 rounded-2xl border border-border/50 hover:border-border transition-colors cursor-pointer"
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl leading-none">{g.emoji}</span>
-                        <span className="text-sm font-bold text-text-primary">{g.name}</span>
-                      </div>
-                      <span className="text-xs font-bold" style={{ color: g.color }}>{pct}%</span>
-                    </div>
-                    
-                    <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden mb-2">
-                      <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: g.color }} />
-                    </div>
-                    
-                    <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-text-muted mt-1">
-                      <span>{formatCurrency(g.current_amount)}</span>
-                      <span>{formatCurrency(g.target_amount)}</span>
-                    </div>
-                  </motion.div>
-                );
-              })
-            ) : (
-              <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-6 bg-surface-alt/30 rounded-2xl border border-dashed border-border cursor-pointer hover:bg-surface-alt/50 transition-colors" onClick={() => router.push('/ahorros')}>
-                <PiggyBank className="w-8 h-8 text-text-muted mx-auto mb-2 opacity-50" />
-                <p className="text-text-muted text-sm px-4">Establecé metas de ahorro para empezar a construir tu futuro.</p>
-              </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
       </div>
 
       <ExportPDFModal 

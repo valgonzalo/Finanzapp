@@ -25,6 +25,10 @@ export const generateMonthlyPDF = async (month: number, year: number) => {
     .notEqual('paid')
     .toArray();
 
+  const savingsGoals = await db.savingsGoals.toArray();
+  const settings = await db.settings.toArray();
+  const userName = settings[0]?.userName || 'Usuario';
+
   // 2. Compute sums
   const income: Transaction[] = [];
   const expenses: Transaction[] = [];
@@ -69,7 +73,7 @@ export const generateMonthlyPDF = async (month: number, year: number) => {
           </div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:11px; color:#52525B; text-transform:uppercase; letter-spacing:1px;">Reporte mensual</div>
+          <div style="font-size:11px; color:#52525B; text-transform:uppercase; letter-spacing:1px;">Reporte de ${userName}</div>
           <div style="font-family:'Space Grotesk',sans-serif; text-transform: capitalize; font-size:20px; font-weight:600; margin-top:4px;">${monthName}</div>
         </div>
       </div>
@@ -227,6 +231,36 @@ export const generateMonthlyPDF = async (month: number, year: number) => {
             }).join('')}
           </tbody>
         </table>
+      </div>
+      ` : ''}
+
+      <!-- SECCIÓN METAS DE AHORRO -->
+      ${savingsGoals.length > 0 ? `
+      <div style="margin-bottom:32px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#00FF88; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+          Metas de Ahorro y Objetivos
+          <div style="flex:1; height:1px; background:#222;"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
+          ${savingsGoals.map(goal => {
+            const pct = Math.min(100, Math.round((goal.current_amount / goal.target_amount) * 100));
+            return `
+              <div style="background:#111; border:1px solid #222; border-radius:12px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div style="font-size:18px;">${goal.emoji} <span style="font-size:14px; color:#FFF; font-weight:600; margin-left:8px;">${goal.name}</span></div>
+                  <div style="font-size:12px; color:${goal.color}; font-weight:bold;">${pct}%</div>
+                </div>
+                <div style="width:100%; height:6px; background:#222; border-radius:3px; overflow:hidden; margin-bottom:12px;">
+                  <div style="width:${pct}%; height:100%; background:${goal.color};"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#52525B;">
+                  <span>${formatCurrency(goal.current_amount)}</span>
+                  <span>Meta: ${formatCurrency(goal.target_amount)}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
       </div>
       ` : ''}
 

@@ -26,7 +26,19 @@ export const translations = {
       settings: "Ajustes",
       preferences: "Preferencias",
       currency: "Moneda",
-      language: "Idioma"
+      language: "Idioma",
+      ahorros: "Ahorros"
+    },
+    ahorros: {
+      title: "Mis Ahorros",
+      subtitle: "Construyendo tu libertad financiera paso a paso.",
+      total_accumulated: "Total Acumulado",
+      new_goal: "Nuevo Objetivo",
+      no_goals_title: "Todavía no tenés metas",
+      no_goals_subtitle: "Creá tu primer objetivo de ahorro para empezar a ver el progreso.",
+      create_goal_btn: "Crear Objetivo",
+      progress_vault: "Preparando Bóveda...",
+      activate_goal: "Activar Objetivo"
     },
     chatbot: {
       greeting: "¡Hola! Soy FinanzBot. Decime qué querés registrar, por ejemplo: 'Gaste 500 en comida' o 'Me deben 1000 de Carlos'.",
@@ -208,7 +220,19 @@ export const translations = {
       settings: "Ajustes",
       preferences: "Preferências",
       currency: "Moeda",
-      language: "Idioma"
+      language: "Idioma",
+      ahorros: "Metas"
+    },
+    ahorros: {
+      title: "Minhas Metas",
+      subtitle: "Construindo sua liberdade financeira passo a passo.",
+      total_accumulated: "Total Acumulado",
+      new_goal: "Novo Objetivo",
+      no_goals_title: "Você ainda não tem metas",
+      no_goals_subtitle: "Crie seu primeiro objetivo de economia para começar a ver o progresso.",
+      create_goal_btn: "Criar Objetivo",
+      progress_vault: "Preparando Cofre...",
+      activate_goal: "Ativar Objetivo"
     },
     chatbot: {
       greeting: "Olá! Eu sou o FinanzBot. Diga-me o que você quer registrar, por exemplo: 'Gastei 500 em comida' ou 'O Carlos me deve 1000'.",
@@ -293,7 +317,19 @@ export const translations = {
       settings: "Impostazioni",
       preferences: "Preferenze",
       currency: "Valuta",
-      language: "Lingua"
+      language: "Lingua",
+      ahorros: "Risparmi"
+    },
+    ahorros: {
+      title: "Miei Risparmi",
+      subtitle: "Costruendo la tua libertà finanziaria passo dopo passo.",
+      total_accumulated: "Totale Accumulato",
+      new_goal: "Nuovo Obiettivo",
+      no_goals_title: "Non hai ancora obiettivi",
+      no_goals_subtitle: "Crea il tuo primo obiettivo di risparmio per iniziare a vedere i progressi.",
+      create_goal_btn: "Crea Obiettivo",
+      progress_vault: "Preparazione Caveau...",
+      activate_goal: "Attiva Obiettivo"
     },
     chatbot: {
       greeting: "Ciao! Sono FinanzBot. Dimmi cosa vuoi registrare, ad esempio: 'Ho speso 500 per il cibo' o 'Carlos mi deve 1000'.",
@@ -378,7 +414,19 @@ export const translations = {
       settings: "Paramètres",
       preferences: "Préférences",
       currency: "Devise",
-      language: "Langue"
+      language: "Langue",
+      ahorros: "Épargne"
+    },
+    ahorros: {
+      title: "Mon Épargne",
+      subtitle: "Construisez votre liberté financière étape par étape.",
+      total_accumulated: "Total Accumulé",
+      new_goal: "Nouvel Objectif",
+      no_goals_title: "Vous n'avez pas encore d'objectifs",
+      no_goals_subtitle: "Créez votre premier objectif d'épargne pour commencer à voir vos progrès.",
+      create_goal_btn: "Créer un Objectif",
+      progress_vault: "Préparation du Coffre...",
+      activate_goal: "Activer l'Objectif"
     },
     chatbot: {
       greeting: "Bonjour! Je suis FinanzBot. Dites-moi ce que vous voulez enregistrer, par exemple: 'J'ai dépensé 500 en nourriture' ou 'Carlos me doit 1000'.",
